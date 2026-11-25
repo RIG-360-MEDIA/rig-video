@@ -18,7 +18,8 @@ def check(name, ok, detail="", critical=True):
 def http(url, timeout=6, proxy=None):
     try:
         h = [urllib.request.ProxyHandler({"https": proxy, "http": proxy})] if proxy else []
-        with urllib.request.build_opener(*h).open(url, timeout=timeout) as r:
+        req = urllib.request.Request(url, headers={"User-Agent": "rig-video-doctor/1.0"})   # Cloudflare refuses Python's default
+        with urllib.request.build_opener(*h).open(req, timeout=timeout) as r:
             return r.status, r.read(2000).decode("utf-8", "replace")
     except Exception as e:
         return getattr(e, "code", 0), str(e)
