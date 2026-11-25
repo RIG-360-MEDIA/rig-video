@@ -36,7 +36,13 @@ const TICKER = ["Rivers still rising across the valley", "4,000 people moved to 
 
 export default function Landing() {
   const signedIn = useStore((s) => s.signedIn);
-  const anchors = useStore((s) => s.anchors).filter((a) => a.offered);
+  const mine = useStore((s) => s.anchors).filter((a) => a.offered);
+  const [shown, setShown] = useState<Anchor[]>([]);
+  useEffect(() => {                                                 // signed out: the desk has no anchors, ask the public list
+    if (mine.length) return;
+    fetch("/api/anchors").then((r) => (r.ok ? r.json() : [])).then(setShown).catch(() => {});
+  }, [mine.length]);
+  const anchors = mine.length ? mine : shown;
   const go = signedIn ? "/desk" : "/signin?new=1";
   useSmoothSections();
 

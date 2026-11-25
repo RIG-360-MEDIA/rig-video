@@ -1033,8 +1033,19 @@ ANCHOR_SRC = {"face.jpg": ("identity_face", ["-vf", "scale=320:-2", "-q:v", "4"]
               "voice.mp3": ("voice_file", ["-t", "12", "-b:a", "96k"])}
 
 
+@app.get("/api/anchors")
+def public_anchors():
+    """The presenters on offer, for the public landing page (signed-out visitors): name, face, voice sample only."""
+    return [{k: a[k] for k in ("id", "name", "gender", "face", "voiceSample", "regions", "offered")} for a in anchors() if a["offered"]]
+
+
+PUBLIC_MEDIA = ("face.jpg", "voice.mp3")                            # shown on the landing page; frame.jpg needs sign-in
+
+
 @app.get("/anchor-media/{aid}/{name}")
-def anchor_media(aid: str, name: str, u=Depends(user)):
+def anchor_media(request: Request, aid: str, name: str):
+    if name not in PUBLIC_MEDIA:
+        user(request)
     a = next((a for a in registry() if a["id"] == aid), None)
     if not a or name not in ANCHOR_SRC or not a.get(ANCHOR_SRC[name][0]):
         raise HTTPException(404)
