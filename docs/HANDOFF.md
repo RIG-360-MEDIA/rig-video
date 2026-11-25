@@ -640,6 +640,15 @@ cd ~/anchor-studio/rigvideo/server
 # then type the password and press Enter. The same email again = replace that account (password reset).
 ```
 
+**Hold renders for one night (nothing starts at 00:00 until you say), and lift the hold:**
+
+```bash
+echo 2026-11-27T07:00:00+05:30 > ~/anchor-studio/rigvideo-data/render_hold_until   # held until that time; ends by itself
+rm ~/anchor-studio/rigvideo-data/render_hold_until                                  # lift it: queued renders start (inside 00:00-07:00)
+```
+
+While it is on, stories an editor sends to render wait in the queue ("Renders are on hold tonight"). No restart needed.
+
 **Start the daily run for chosen picks by hand:** Desk → Today's picks, or `POST /api/daily/start {"pickIds": [...]}`
 while signed in.
 

@@ -244,7 +244,9 @@ def view(p):
     out = store.public(p)
     if out.get("render") and out["render"]["state"] in ("queued", "rendering", "assembling"):
         out["render"] = {**out["render"], "queuePosition": next((i for i, q in enumerate(queue()) if q["id"] == p["id"]), 0)}
-        if out["render"]["state"] == "queued" and not store.in_render_window():
+        if out["render"]["state"] == "queued" and store.render_hold():
+            out["render"]["waitNote"] = "Renders are on hold tonight; they start when the hold is lifted"
+        elif out["render"]["state"] == "queued" and not store.in_render_window():
             out["render"]["waitNote"] = f"Starts at {os.environ.get('RIGVIDEO_RENDER_WINDOW', '00:00-07:00').split('-')[0]} IST"
     return out
 
@@ -856,7 +858,7 @@ def remake_final(pid: str, u=Depends(user)):
     if busy(p, "final"):
         raise HTTPException(409, "The final video is being made right now.")
     if not store.in_render_window():
-        raise HTTPException(409, "Final videos are made during the night render window (00:00-07:00 IST).")
+        raise HTTPException(409, "Final videos are made during the night render window (00:00-07:00 IST), not while renders are on hold.")
     store.update(pid, lambda q: q.setdefault("final", {}).update(state="building", progress=0, note="Starting"))
     spawn(pid, "final", "again")
     return view(store.read(pid))

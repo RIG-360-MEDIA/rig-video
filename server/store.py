@@ -173,8 +173,21 @@ def text_share(p):
     return (sum(c["kind"] == "post_or_document" for c in cuts) / max(1, len(cuts))), short
 
 
+def render_hold(t=None):
+    """A one-off hold on renders: DATA/render_hold_until holds an ISO time; until then no render starts (stories wait in
+    the queue). It ends by itself, so the next night is normal. Set and lifted by hand (docs/HANDOFF.md, Runbook)."""
+    try:
+        until = dt.datetime.fromisoformat((DATA / "render_hold_until").read_text().strip())
+    except (OSError, ValueError):
+        return None
+    return until if (t or now()) < until else None
+
+
 def in_render_window(t=None):
-    """Renders (anchor and VO final) start only inside RIGVIDEO_RENDER_WINDOW (IST, default 00:00-07:00)."""
+    """Renders (anchor and VO final) start only inside RIGVIDEO_RENDER_WINDOW (IST, default 00:00-07:00), and not
+    while a render hold is on."""
+    if render_hold(t):
+        return False
     a, b = (dt.time.fromisoformat(x) for x in os.environ.get("RIGVIDEO_RENDER_WINDOW", "00:00-07:00").split("-"))
     t = (t or now()).time()
     return a <= t < b if a < b else t >= a or t < b
@@ -297,6 +310,11 @@ if __name__ == "__main__":
         assert "write" not in read(p["id"])["_jobs"] and "_jobs" not in public(read(p["id"]))
         T = lambda h: dt.datetime(2026, 11, 23, h, 30, tzinfo=IST)
         assert in_render_window(T(0)) and in_render_window(T(6)) and not in_render_window(T(7)) and not in_render_window(T(23))
+        (DATA / "render_hold_until").write_text(T(7).isoformat())                    # held until 07:30: nothing tonight
+        assert not in_render_window(T(0)) and not in_render_window(T(6)) and render_hold(T(6))
+        assert render_hold(T(8)) is None and in_render_window(dt.datetime(2026, 11, 24, 1, 0, tzinfo=IST))   # next night normal
+        (DATA / "render_hold_until").unlink()
+        assert in_render_window(T(0))
         c = lambda k, s=3.0: {"kind": k, "secs": s}
         e = {"format": "vo_only", "edit": {"beats": [{"sectionId": "b1", "secs": 6.0, "cuts": [c("footage"), c("post_or_document")]},
                                                      {"sectionId": "b2", "secs": 7.0, "cuts": [c("footage"), c("footage")]}]}}
