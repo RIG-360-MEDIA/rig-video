@@ -239,7 +239,7 @@ The job loop is a thread inside the API that wakes every 4 seconds. Each time it
   - on the first event beat, also the whole-event line;
   - each line asks for up to 10 videos (`limit:10`).
   - If a beat finds fewer than 2 videos, its rare names are re-spelled the way found titles spell them (articles misspell), and it searches again.
-- **Anchor formats:** one footage project per VO part. Found moments are cut into clips (`clean_shots.py` splits shots and rejects presenters, graphics, maps and vertical video). The story's **picture pool** is searched once (`orchestrator/assets.story_pictures`: captioned news photos naming the story) and shared out per part.
+- **Anchor formats:** one footage project per VO part. Each found video is downloaded whole (≤720p, ≤20 min, no live streams). Its moments are cut into clips only when an editor places them (the `cut` job; `clean_shots.py` splits shots and rejects presenters, graphics, maps and vertical video). The story's **picture pool** is searched once (`orchestrator/assets.story_pictures`: captioned news photos naming the story) and shared out per part.
 - **YouTube blocking:** the office IP is blocked by YouTube ("Sign in to confirm you're not a bot"). Every download goes through `footage/ytdlp_node.sh`, which uses the WARP proxy when it answers and Node 22 for YouTube's JavaScript checks. If YouTube still refuses, the job stops with a clear message and writes `rigvideo-data/youtube_blocked`.
 
 ### Step 4: clip check (`worker.step_check` → `studio-app/pipeline/tools/footage/vo/vo_pick.py`)
@@ -293,16 +293,16 @@ appearance**, with 3 appearances in a typical story.
    `make_master.py` time-fit each anchor part's chosen take, keeping pitch and stretching at most ±9%. Each part then fills whole
    **328-frame shots** exactly (24 fps; 39 frames of context overlap between shots). Each anchor part is its own
    *appearance*, rendered **independently** from a fresh seed and never chained to another.
-2. **ComfyUI jobs** (`build_st.py` → `build_main.py`, recipe **"t8k"**): per appearance, a *seed* job (20 steps,
-   FirstBlockCache + sparse attention) plus a *chain* job for further shots (8 steps with the Acc-8Step LoRA). The workflows come from
-   `studio-app/pipeline/templates/*.json`. The anchor's face is pinned from `anchor_registry/frames/`, the studio plate
+2. **ComfyUI jobs** (`build_st.py` → `build_main.py`, recipe **"t8k"**): per appearance, a *seed* job and a *chain* job for further shots, both
+   on the speed path (`--turbo-seed`: 8 steps with the Acc-8Step LoRA, FirstBlockCache + sparse attention). The workflows come from
+   `studio-app/pipeline/templates/*.json`. The anchor's face (`anchor_face_<id>.png` or `anchor_id_<id>.png`, from `anchor_registry/frames/`) and the chain's fixed reference `anchor_ref_v12.png` are read from ComfyUI's `input/` folder; the studio plate
    from `bg_options/`, and the voice is locked to the master audio (*source_track*: the anchor lip-syncs to our TTS voice;
    H3 does not invent a voice).
 3. **GPU run** (`run_multi.py`):
    - Waits for any footage search or check to finish (`search.lock`).
-   - **Pauses other teams' GPU services on t7** (`orchestrator/gpu.py`: `ollama-robin`, `pt-worker-box-gpu`, `collect-ollama`, `vo-vision`) and schedules a separate systemd timer that restores them no matter what.
+   - **Pauses other teams' GPU services on t7** (`orchestrator/gpu.py`: `ollama-robin`, `pt-worker-box-gpu`, `collect-ollama`, `vo-vision`) only if something holds the GPU, and schedules a separate systemd timer that restores them 5 h later no matter what.
    - Starts ComfyUI once, renders every appearance, then kills ComfyUI and restores the services.
-   - The anchor's pictures must already be in `~/anchor-studio/repos/ComfyUI-v038/input/`.
+   - The anchor's pictures must already be in `~/anchor-studio/repos/ComfyUI-v038/input/`. **`deploy.sh` does not copy them, nor `comfy_nodes/`:** a new anchor's face and any custom-node change are copied there by hand.
 4. **Lip-sync check** (`lipsync_check.py`): if the mouth lags the voice by more than 2 frames, the render is **held** and an
    editor decides.
 5. **Assembly** (`worker.step_assemble` → `assemble_story.py`):
@@ -329,7 +329,7 @@ For each cut in the edit:
    - **SWEEP**: a still with a slow push-in.
    Text cut by the crop edge is blurred.
 3. **Crop check** (`vertical/cropcheck.py`): the vision model compares the original and vertical frames at the shot's key moment. If what the shot was picked for is lost, the cut is redone as FIT. Text shots always use FIT.
-4. **Sound** (`vertical/sound916.py`): shots with a sound prompt get scene sound from **HunyuanVideo-Foley XL** (`~/foley` on t7). It sits 12 dB under the voice for loud scenes and 24 dB for quiet ones. The first sound leads in up to 2 s before the voice, and there are up to 2 "sound-ups" at beat boundaries. Nothing comes from the source clips' own audio, and there is **no music**.
+4. **Sound** (`vertical/sound916.py`): shots with a sound prompt get scene sound from **HunyuanVideo-Foley XL** (`~/foley` on t7). It sits 12 dB under the voice for loud scenes and 24 dB for quiet ones. The first sound leads in 1.5 s before the voice, and there are up to 2 "sound-ups" at beat boundaries. Nothing comes from the source clips' own audio, and there is **no music**.
 5. **Graphics** (`vertical/gfx916.py`): word-synced captions, the headline title card at the start, and quote cards. No credits. Burned in with libass.
 6. One encode joins the shots under the beat voices and normalises loudness.
 
@@ -431,8 +431,8 @@ rig-video/
 │   └── test_*.py       self-tests (run by CI)
 ├── web/                            -> built into t7 ~/anchor-studio/rigvideo/dist
 │   ├── src/pages/      Landing, SignIn, Desk, Script, Visuals, VoEdit, Review, Library, Anchors, Settings
-│   ├── src/data/       types.ts (the Project shape), store.ts (API client), fixture.ts (dev only)
-│   └── DESIGN.md, PRODUCT.md   the design system and product brief
+│   ├── src/data/       types.ts (the Project shape), store.ts (API client)
+│   └── DESIGN.md      the design system
 ├── studio-app/                     -> t7 ~/anchor-studio/studio-app
 │   ├── pipeline/
 │   │   ├── orchestrator/  select_stories (picks), llm (LLM pool), assets (story pictures), publish + youtube_auth
@@ -443,8 +443,8 @@ rig-video/
 │   │   └── tools/
 │   │       ├── sourcetrack/   anchor render chain: make_appearances, make_master, build_st, run_multi,
 │   │       │                  lipsync_check, assemble_story (+ assemble_hybrid / assemble_novo helpers)
-│   │       ├── footage/       start_backend.sh (starts the footage backend), clean_shots + footage_api
-│   │       │                  (anchor footage cuts), vo/vo_pick.py (THE clip checker)
+│   │       ├── footage/       start_backend.sh (starts the footage backend), clean_shots.py (labels anchor
+│   │       │                  footage cuts), vo/vo_pick.py (THE clip checker)
 │   │       ├── voice_lab/chatterbox_takes.py   -> t3 ~/anchor-studio/voice_lab (voice takes)
 │   │       ├── new_anchors/runlib.py           GPU helpers used by run_multi
 │   │       └── colorlock.py, wall_comp.py      studio-wall compositing
@@ -465,7 +465,7 @@ rig-video/
 ├── ops/      doctor.py (is everything up?)
 ├── config/   env.example.md (every secret file and variable, by name only)
 ├── .github/workflows/   ci.yml (check), release.yml (deploy), doctor.yml (daily health)
-└── docs/     this file; background/ (design notes: footage strategy, 9:16 converter research, VO checker)
+└── docs/     this file; reference/ (deep chapters per part); design/ (checker criteria, script rulebook, recipe notes)
 ```
 
 **Which Python runs what (on t7):**
@@ -492,7 +492,7 @@ release (section 13).
 | What | Where | Size / version |
 |---|---|---|
 | **ComfyUI** | t7 `~/anchor-studio/repos/ComfyUI-v038` | comfyanonymous/ComfyUI @20ca544 (v0.38) |
-| ComfyUI custom nodes | `…/custom_nodes/` | ComfyUI-KJNodes @d3cfe21, ComfyUI-MiniMaxH3-Contex-Loop @93d6bf1, ComfyUI-MiniMaxH3-FirstBlockCache @f7a2712 (+ `comfy_nodes/patches`), ComfyUI-VideoHelperSuite @4d907be, our `h3_sparse_override`, `h3_step_profiler` |
+| ComfyUI custom nodes | `…/custom_nodes/` | ComfyUI-KJNodes @d3cfe21, ComfyUI-MiniMaxH3-Contex-Loop @93d6bf1, ComfyUI-MiniMaxH3-FirstBlockCache @f7a2712, ComfyUI-VideoHelperSuite @4d907be, our `h3_sparse_override` |
 | **MiniMax H3 models** | `…/models/` (52 GB) | `minimax_h3_ref2va_pruned_int8_convrot` (unet), `qwen3vl_32b_minimax_h3_int8_convrot` (text encoder), `minimax_h3_video_vae_fp16`, `minimax_h3_audio_vae_fp32`, LoRAs `MiniMax-H3-Ref2VA-Acc-8Step_pruned_comfy`, `minimax_h3_ref2v_turbo_4step_v0.1` |
 | ComfyUI input pictures | `…/input/` | `anchor_face_<id>.png` per anchor + the studio plate. **A render fails if an anchor's pictures are missing here.** |
 | Anchor voices and videos | t7 `~/anchor-studio/studio-app/anchor_registry/{voices,videos}` | ~45 MB |
@@ -526,7 +526,7 @@ and variable by name. In short (t7):
 | `~/.config/anchor-studio/search.env` | Tavily, SerpAPI |
 | `~/.config/anchor-studio/footage-auth` | Footage backend login password |
 | `~/warp/*` | WARP account and WireGuard key |
-| `~/.ssh/to_trijya3`, `to_trijya8`, `rigvideo_deploy_t8` | Keys from t7 to t3 (general) and to t8 (each forced to a single script) |
+| `~/.ssh/to_trijya3`, `rigvideo_deploy_t8` | Keys from t7 to t3 (general) and to t8 (forced to `~/vision/deploy_recv.sh`) |
 
 **Settings** (defaults in code; set in `api.env` to change):
 
@@ -550,7 +550,7 @@ The machines restart on their own; t7, for example, restarts daily at about 07:0
 2. **systemd starts every *enabled* user unit**, because "linger" is on for the user (section 2 shows which are enabled).
 3. **The job loop recovers cut-off work** within seconds of the API starting:
    - a job whose process vanished starts again by itself, up to `RIGVIDEO_AUTO_RESUME` (2) times;
-   - every step continues from what it already made: the footage search resumes its projects, and the render keeps finished appearances;
+   - the footage search resumes its footage projects; the other steps start that job again from its beginning (an anchor render rebuilds its appearances from scratch);
    - a cut-off **render** goes back into the queue and waits for the render window;
    - a cut-off **YouTube post** is *not* repeated by itself, because it could upload twice. It shows as failed with "Post again".
    - After 2 restarts, a job is left failed with "Try again" for an editor.
@@ -581,7 +581,7 @@ flowchart LR
   `self-hosted, rig-video`). It is the only CI machine that can reach the three machines.
   **Pull requests from forks never run on it** (the repo is public; see `ci.yml`).
 - **`check` (every push and same-repo PR, `deploy/check.sh`):** secret scan; all Python compiles; server self-tests (restart resume,
-  vision progress, writer busy, event date, store, worker); shell syntax; site type-check and build. **Nothing goes live.**
+  search pipelining, writer busy, event date, store, worker); shell syntax; site type-check and build. **Nothing goes live.**
 - **`release` (a published GitHub Release):** only tags on `main`. It runs `check` again, then `deploy/deploy.sh <tag>`, which:
   1. backs up the current t7 code to `~/.local/state/rig-video/backups/` (last 20);
   2. installs t3's files, t8's files (through a key forced to `~/vision/deploy_recv.sh`), and t7's files;

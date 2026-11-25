@@ -99,7 +99,7 @@ AUTO_RESUME = int(os.environ.get("RIGVIDEO_AUTO_RESUME", "2"))      # restarts o
 
 def resume(p, job, j):
     """A job whose process vanished (the machine restarted under it) starts again on its own, up to AUTO_RESUME times.
-    Every step resumes from what it already made (render keeps finished shots). A render goes back in the queue (it
+    The search resumes its footage projects; other steps start over. A render goes back in the queue (it
     waits for the render window); a post is never repeated by itself (it could upload twice)."""
     n = (p.get("render") or {}).get("resumes", 0) if job == "render" else j.get("resumes", 0)
     if job == "post" or n >= AUTO_RESUME:
@@ -235,14 +235,14 @@ def health():
 def desk(u=Depends(user)):
     ws = store.WORKSPACES[u["workspaceId"]]
     ps = [p for p in store.all_projects(u["workspaceId"]) if not p.get("_archived")]
-    picks, bodies = selection() if ws["picksFeed"] else ([], {})
+    picks = selection()[0] if ws["picksFeed"] else []
     used = {p.get("_pick") for p in store.all_projects(u["workspaceId"])}      # a pick made into a story leaves the list for everyone
     pr = store.prefs(u["id"])
     n = sum(not x.get("reserve") for x in picks)                    # as many cards as the day's picks: one used or removed
     picks = [x for x in picks if x["id"] not in used and x["id"] not in pr["hiddenPicks"]][:n]   # is replaced by the next reserve
     lib = sorted([p["_library"] for p in store.all_projects(u["workspaceId"]) if p.get("_library")], key=lambda x: x["madeAt"], reverse=True)
     return {"user": {k: u[k] for k in ("id", "name", "email", "role", "workspaceId")}, "workspace": ws,
-            "picks": picks, "pickBodies": bodies, "hiddenPicks": pr["hiddenPicks"], "defaults": pr["defaults"],
+            "picks": picks, "hiddenPicks": pr["hiddenPicks"], "defaults": pr["defaults"],
             "formats": list(FORMATS), "anchors": anchors(), "projects": [view(p) for p in ps], "jobs": {p["id"]: j for p in ps if (j := job_view(p))},
             "queue": [view(p)["render"] for p in queue() if p.get("_workspace") == u["workspaceId"]], "library": lib}
 

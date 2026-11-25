@@ -1,6 +1,6 @@
 """VO-only 9:16 converter (prototype v1). One clip in -> 1080x1920, 24 fps, H.264, no audio, plus a JSON sidecar.
 
-Rules come from docs/rig-video/vertical-converter/GOLDEN_SET.md (RIG-NEWS-AI- repo). Five models, all MIT/Apache:
+Rules come from docs/design/vertical-converter/GOLDEN_SET.md. Five models, all MIT/Apache:
 TransNetV2 (cuts), RF-DETR Small (people + objects), YuNet (faces), UNISAL (saliency), RapidOCR det (text boxes).
 Per shot the layout is one of:
   PASS   already 9:16 or narrower (after bars are removed): scaled, never cropped

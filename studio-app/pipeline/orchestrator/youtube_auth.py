@@ -1,4 +1,4 @@
-"""One-time YouTube authorization for the publish step (baseline/YOUTUBE_UPLOAD_ACCESS.md, step 7). Run on the Mac.
+"""One-time YouTube authorization for the publish step (docs/design/YOUTUBE_UPLOAD_ACCESS.md, step 7). Run on the Mac.
 
   python -m orchestrator.youtube_auth ~/Downloads/client_secret_XXXX.json      # the channel owner signs in in the browser
   python -m orchestrator.youtube_auth --playlists                              # create "Awaiting approval" + "Video Bulletin"

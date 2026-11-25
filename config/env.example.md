@@ -16,7 +16,6 @@ private `secrets-backup` branch of Yash-2704/rig-platform. Only the variable NAM
 | `~/.config/anchor-studio/footage-auth` | the footage backend's login password (one line) | footage backend + worker |
 | `~/warp/wgcf-account.toml`, `~/warp/wgcf-profile.conf`, `~/warp/wireproxy.conf` | Cloudflare WARP account + WireGuard key | warp-proxy.service |
 | `~/.ssh/to_trijya3` | ssh key to t3 (voice runs, writer switch, deploys) | worker, deploy |
-| `~/.ssh/to_trijya8` | ssh key to t8, forced to `~/vision/vision_job.sh` | clip checker |
 | `~/.ssh/rigvideo_deploy_t8` | ssh key to t8, forced to `~/vision/deploy_recv.sh` | deploy |
 | `~/anchor-studio/rigvideo-data/session.key` | signs site sessions (made on first start) | API |
 | `~/anchor-studio/rigvideo-data/users.json` | accounts (scrypt hashes) | API |

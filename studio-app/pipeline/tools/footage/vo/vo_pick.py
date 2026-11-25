@@ -1,5 +1,5 @@
 """VO-only clip checker: footage search results -> an edit list per story (which shots, where, how long).
-Rules: docs/rig-video/vo-only/CHECKER_CRITERIA.md (RIG-NEWS-AI repo). Steps:
+Rules: docs/design/vo-only/CHECKER_CRITERIA.md. Steps:
   1 gate     every video the story's search found, split into camera shots; repeated pictures dropped (stills stay)
   2 rank     SigLIP-2: each beat's line + wanted picture vs every shot of the story's pool -> top candidates per beat
   3 pick     Qwen3-VL, one call per beat: candidates side by side -> unusable kinds out, 1-3 shots in order

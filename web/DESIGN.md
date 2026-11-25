@@ -1,5 +1,5 @@
 ---
-name: Anchor Studio by DNL
+name: RIG-Video (formerly Anchor Studio by DNL)
 description: Contact Sheet. A newsroom video desk where every story is a roll of film, picks are marked in red china marker and every measurement is edge print.
 colors:
   g0: "#0a0b0d"
@@ -176,7 +176,7 @@ components:
     height: "32px"
 ---
 
-# Design System: Anchor Studio by DNL
+# Design System: RIG-Video (formerly Anchor Studio by DNL)
 
 ## Overview
 

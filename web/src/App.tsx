@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { boot, useStore, FIXTURE_ID } from "@/data/store";
+import { boot, useStore } from "@/data/store";
 import { TipProvider, Toaster } from "@/components/ui";
 import { AppShell } from "@/components/shell";
 const Landing = lazy(() => import("@/pages/Landing"));
@@ -27,8 +27,7 @@ function Page({ children }: { children: ReactNode }) {
 function Signed({ children }: { children: ReactNode }) {
   const signedIn = useStore((s) => s.signedIn);
   const loc = useLocation();
-  const fixture = import.meta.env.DEV && loc.pathname.includes(FIXTURE_ID);   // the dev fixture opens without signing in
-  if (!signedIn && !fixture) return <Navigate to="/signin" replace state={{ from: loc.pathname }} />;
+  if (!signedIn) return <Navigate to="/signin" replace state={{ from: loc.pathname }} />;
   return <AppShell><Suspense fallback={<div className="skeleton mx-auto mt-10 h-1 w-40 rounded-full" />}>{children}</Suspense></AppShell>;
 }
 
@@ -54,7 +53,6 @@ export default function App() {
               <Route path="review" element={<ReviewPage />} />
               <Route path="*" element={<Navigate to="script" replace />} />
             </Route>
-            {import.meta.env.DEV && <Route path="/dev/vo" element={<Navigate to={`/story/${FIXTURE_ID}/visuals`} replace />} />}
             <Route path="/library" element={<Signed><Page><Library /></Page></Signed>} />
             <Route path="/anchors" element={<Signed><Page><Anchors /></Page></Signed>} />
             <Route path="/settings" element={<Signed><Page><Settings /></Page></Signed>} />

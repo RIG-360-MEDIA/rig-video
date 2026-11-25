@@ -1,6 +1,6 @@
-"""Footage step, after footage_api.py: downloaded clips -> clean single shots usable as B-roll.
+"""Footage step: downloaded clips -> clean single shots usable as B-roll.
 The repo's clips are mostly other channels' TV packages (presenters, BREAKING panels, tickers, maps, vertical phone video;
-baseline/FOOTAGE_REPO_USAGE.md). Per clip: split into shots (frame-histogram cuts); per shot (>= 1.5 s), 3 frames are
+docs/design/FOOTAGE_REPO_USAGE.md). Per clip: split into shots (frame-histogram cuts); per shot (>= 1.5 s), 3 frames are
 labelled with SigLIP-2 (cached on trijya) as clean scene footage vs presenter / graphic / map / vertical / call / website,
 burned-in text in the frame centre is measured with RapidOCR, and side bars are detected. Corner bugs (channel logos) are
 expected and removed later by a 10 % centre crop in assembly.

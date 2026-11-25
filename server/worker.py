@@ -14,7 +14,6 @@ import re
 import shutil
 import subprocess
 import sys
-import threading
 import time
 import traceback
 import urllib.parse
@@ -33,17 +32,12 @@ TOOLS_PY = os.environ.get("ANCHOR_TOOLS_PY", str(HOME / ".cache" / "anchor-tools
 SV = STUDIO / "repos" / "social_verifier"
 os.environ["PATH"] = f"{STUDIO / 'repos' / 'ffmpeg-shared' / 'current' / 'bin'}:{HOME / '.local' / 'bin'}:" + os.environ.get("PATH", "")
 
-# clip checker (trijya-8 4070): visual_pick.py looks at every shot of the found videos and checks where it was filmed
-V8HOST = os.environ.get("VISION_HOST", "trijya-8@100.95.0.11")
-V8SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "-i", os.environ.get("VISION_KEY", str(HOME / ".ssh" / "to_trijya8")), V8HOST]
-VISION_VIDEOS = 6                                                  # top found videos per section the checker looks at
 MIN_CLIP_S = 3.0     # shortest clip cut from a found moment
 YTDLP = HOME / "anchor-studio" / "repos" / "social_verifier" / "ytdlp_node.sh"   # the footage repo's yt-dlp (PO tokens, node)
 SOURCE_FMT = "bv*[height<=720][vcodec^=avc1]+ba[ext=m4a]/b[height<=720][vcodec^=avc1]/bv*[height<=720]+ba/b[height<=720]"
 # VO-only (9:16) crops from the frame, so it needs the height: up to 1080p (golden set Q9: a crop may be upscaled at most 2x)
 SOURCE_FMT_VO = "bv*[height<=1080][vcodec^=avc1]+ba[ext=m4a]/b[height<=1080][vcodec^=avc1]/bv*[height<=1080]+ba/b[height<=1080]"
 SOURCE_MAX_S = 1200  # longer found videos are not downloaded whole (their moments are still cut on use)
-CHECKER = False      # the clip checker is off until it is rebuilt (user, 2026-11-19): every found moment is cut and shown instead
 
 # voice box (trijya-3): Chatterbox + an ffmpeg with Rubber Band
 VHOST = os.environ.get("ANCHOR_VOICE_HOST", "trijya-3@100.99.155.88")
@@ -873,9 +867,7 @@ def finish_section(c, pid, sid, sv, run_ids, checks=None):
 
 
 def after_search(c, pid, sid, svp, found):
-    """A part's found videos -> playable: the clip checker when it is on, else every found moment is cut."""
-    if CHECKER:
-        return vision_check(c, pid, sid, svp, found)
+    """A part's found videos -> playable: each is downloaded whole once (the site plays it; moments are cut on use)."""
     todo = [f for f in found if not f.get("source") and not LIVE.search(f["title"]) and 0 < (f["duration"] or 0) <= SOURCE_MAX_S]
     done = [0]
 
@@ -923,83 +915,6 @@ def part(pid, sid, text=None):
     store.update(pid, f)
 
 
-CHECK_NOTE = {"videos": "Checking where each video was filmed", "facts": "Checking the shots against the story facts",
-              "place": "Checking where the shots were filmed"}
-
-
-def check_note(what):
-    """visual_pick.py's PROGRESS text -> the part's status line."""
-    m = re.fullmatch(r"shots (\d+)/(\d+)", what)
-    return f"Checking clips: {m[1]} of {m[2]} shots" if m else CHECK_NOTE.get(what, "Checking clips")
-
-
-def story_facts(p):
-    """The writer's fact lines ("Numbers: no injuries or damage reported"): the checker rejects pictures they rule out."""
-    return [f"{f['label']}: {f['value']}" for f in p.get("facts") or [] if f.get("value")]
-
-
-def vision_check(c, pid, sid, svp, found):
-    """The clip checker on t8 looks at the shots the search matched in the top found videos: what they show, how relevant and clean, and
-    whether it was filmed at the story's place (metadata + a blind look, see visual_pick.py). Its picks become moments and
-    are cut; videos filmed somewhere else leave the list. Videos already cut are not checked again.
-    If the checker cannot run, nothing is cut automatically (an unchecked clip could show the wrong place): the found
-    videos stay for the editor to place by hand."""
-    todo = [f for f in found if not LIVE.search(f["title"]) and not any(m.get("clip") for m in f["moments"])
-            and (f["duration"] or 0) <= 1200 and any(not m.get("checked") for m in f["moments"])][:VISION_VIDEOS]
-    if not todo:
-        part(pid, sid)
-        return found
-    p = store.read(pid)
-    s = find(p, sid)
-    job = [{"story": pid, "sid": sid, "text": f"{p['headline']}. {s['text'] if s else ''}".strip(),
-            "date": event_date(p).strftime("%Y%m%d"), "facts": story_facts(p),
-            "videos": [{"id": f["youtubeId"], "title": f["title"], "dur": f["duration"] or 0,
-                        "moments": [[m["start"], m["end"]] for m in f["moments"] if not m.get("checked")]} for f in todo]}]
-    part(pid, sid, "Checking clips")
-    pr = subprocess.Popen(V8SSH + [re.sub(r"[^A-Za-z0-9_-]", "", f"{pid}_{sid}")], stdin=subprocess.PIPE,
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    out, err = [], []
-    reader = threading.Thread(target=lambda: out.append(pr.stdout.read()), daemon=True)
-    reader.start()
-    kill = threading.Timer(3 * 3600, pr.kill)
-    kill.start()
-    pr.stdin.write(json.dumps(job))
-    pr.stdin.close()
-    for line in pr.stderr:                                          # PROGRESS lines as the checker goes
-        m = re.match(r"PROGRESS \S+ (.+)", line.strip())
-        if m:
-            part(pid, sid, check_note(m[1]))
-        else:
-            err.append(line)
-    pr.wait()
-    kill.cancel()
-    reader.join()
-    if pr.returncode:
-        part(pid, sid)
-        log(f"clip check for {sid} failed, nothing cut: {''.join(err).strip()[-400:]}")
-        return found
-    res = json.loads(out[0])
-    wrong = set(res.get("wrong_videos") or [])
-    store.update(pid, lambda q: q["visuals"].setdefault(sid, {}).setdefault("wrongPlace", []).extend(sorted(wrong)))
-    found = [f for f in found if f["youtubeId"] not in wrong]
-    by = {f["youtubeId"]: f for f in found}
-    picked = []
-    for x in res.get("picked") or []:
-        f = by.get(x["video"])
-        if not f:
-            continue
-        loc = x.get("location") or {}
-        f["moments"].append({"start": x["start"], "end": x["end"], "label": "Checked shot", "fit": loc.get("verdict", ""),
-                             "description": f"{x.get('shows', '')}. Place {loc.get('verdict', '?').lower()}: {loc.get('why', '')}",
-                             "score": round(x.get("relevance", 0) * 25), "estimated": False, "checked": True})
-        picked.append((f, len(f["moments"]) - 1))
-    log(f"clip check {sid}: {len(picked)} shots picked, wrong place {sorted(wrong)}")
-    part(pid, sid, "Cutting the checked clips")
-    cut(c, pid, sid, svp, picked)
-    part(pid, sid)
-    return found
-
-
 def step_search(p):
     pid = p["id"]
     store.job(pid, "search", note="Waiting its turn (a render is using the machine)")
@@ -1039,7 +954,7 @@ def step_search(p):
                 log(f"pictures for {s['id']} failed: {e}")
                 ph = []
             store.update(pid, lambda x: x["visuals"][s["id"]].update(photos=ph))
-        store.job(pid, "search", progress=0.9, note="Checking the clips" if CHECKER else "Cutting the clips")
+        store.job(pid, "search", progress=0.9, note="Cutting the clips")
         for fu in pending:                                          # a failed check fails the search job, as before
             if fu is not None:
                 fu.result()
@@ -1113,7 +1028,7 @@ def step_cut(p):
 
 
 # ------------------------------------------------------------------ VO only: a footage search per beat, then the clip checker
-# The checker (vo_pick.py, RIG-NEWS-AI- docs/rig-video/vo-only/CHECKER_CRITERIA.md) runs here on t7: its vision model is
+# The checker (vo_pick.py, docs/design/vo-only/CHECKER_CRITERIA.md) runs here on t7: its vision model is
 # vo-vision.service (:11620), its Python the converter's venv (torch, SigLIP-2, RapidOCR). It looks at every video the
 # story's beats found (480p copies in VO_CACHE) and returns the edit: which shots play under each beat, in order, how long.
 
@@ -1121,7 +1036,6 @@ VO_PY = os.environ.get("VO_PY", str(STUDIO / "vertical" / ".venv" / "bin" / "pyt
 VO_PICK = FOOT_TOOLS / "vo" / "vo_pick.py"
 VO_CACHE = pathlib.Path(os.environ.get("VO_CACHE", HOME / "vo_check" / "cache"))
 VO_GAP = 0.35        # seconds after each beat's voice before the next beat (a breath); part of the beat's picture time
-CUT_KEYS = ("id", "shot", "at", "secs", "src", "kind", "fit", "shows", "sound", "poster", "clip", "fill", "swapped", "review", "repeat", "byUser")
 
 
 def start_job(pid, job, *args):

@@ -1,10 +1,8 @@
-"""ASSETS: ONE photo that shows this story for the studio wall -> a slow Ken-Burns video.
-
-Layer 0 (free, no keys; user decision 2026-10-11, research in baseline/WALL_PHOTO_RESEARCH.md): photos WITH captions from the
-story's own coverage (our DB's member articles + local-language Bing News RSS), names linked to Wikidata, caption gates, the
-text LLM picks like a picture editor, then size / collage / burned-in text filters. Fallback: the subject's Commons image,
-then the DNL logo card. Downloaded at SCRIPT time (a dead link never blocks POST). Caption/credit/page -> meta.json.
-"""
+"""Story pictures for RIG-Video (worker.story_photos / photos_for; vo_pick's own-picture fill):
+story_pictures() gathers captioned news photos that name the story (the article's own page photos, Tavily / SerpAPI
+image search on free quotas, Bing images, Wikimedia Commons), then fetch() keeps only clean ones (no collages, burned-in
+text, corner logos, split screens; SigLIP-2 + RapidOCR). ken_burns() turns stills into a slow push-in video clip.
+Research behind the rules: docs/design/WALL_PHOTO_RESEARCH.md."""
 import html
 import io
 import json
@@ -113,21 +111,6 @@ def _siglip(im):
         return None
 
 
-def _scene(path, sentence):
-    """How much the photo LOOKS like the story's ideal-photo sentence (SigLIP-2 cosine; None without the model). Used only to
-    rank photos the captions already qualified - it cannot tell which event or which person."""
-    if not sentence or _siglip(Image.new("RGB", (64, 64))) is None:     # loads the model once
-        return None
-    import torch
-    model, proc, _ = _SIG[0]
-    with torch.no_grad():
-        t = model.get_text_features(**proc(text=[f"This is {sentence}."], padding="max_length", max_length=64, return_tensors="pt"))
-        t = getattr(t, "pooler_output", t)
-        f = model.get_image_features(**proc(images=Image.open(path).convert("RGB"), return_tensors="pt"))
-        f = getattr(f, "pooler_output", f)
-    return float((f / f.norm(dim=-1, keepdim=True) @ (t / t.norm(dim=-1, keepdim=True)).T)[0, 0])
-
-
 def _side_detail(im):
     """Detail in the outer 15% columns vs the centre: padded/blurred side bars score near 0 (measured 0.02-0.16), real photos
     and portraits 0.3+."""
@@ -223,40 +206,6 @@ STOCK = ("pexels.com", "unsplash.com", "pixabay.com", "shutterstock.", "istockph
 _UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"}
 
 
-# ---------------------------------------------------------------- wall photo, layer 0 (free, no keys; user decision 2026-10-11)
-# Research: baseline/WALL_PHOTO_RESEARCH.md. Pixels cannot tell "this quake's rubble" from "a quake's rubble" - only the photo's
-# CAPTION, date and place can. So: harvest photos WITH captions from the story's own coverage (our DB's member articles + local-
-# language Bing News RSS), link the story's names to Wikidata (aliases in the local language, the subject's portrait/poster),
-# gate on caption text, let the text LLM pick like a picture editor, then the size/collage/text filters decide.
-ENTITIES = """You prepare a news picture search. From the story, return JSON:
-{"entities": [{"name": "<as written>", "type": "person|place|event|work|object|organisation",
-               "what": "<2-4 words saying what it is, e.g. Israeli documentary film, Panamanian town, US press secretary>"}],
-               (the 2-5 the event itself is about - NEVER people or countries that only reacted, commented or condemned)
- "subject": "<the ONE person, work, place or object this story is mainly about>",
- "lang": "<ISO code of the language spoken where it happened, e.g. es, ar, hi, he, fr; en if English-speaking>",
- "visual": ["<3-6 concrete things a camera would see in a photo of THIS story, English, e.g. collapsed building, rubble,
-             missile, airport, poster>"],
- "visual_local": ["<the same words in that local language>"],
- "ideal_photo": "<one sentence describing the ideal photo of THIS story as a camera would see it, e.g. collapsed houses
-                 and rubble in a small town after an earthquake; a woman speaking at the White House press briefing podium>",
- "news_queries": ["<3 short news searches (2-4 words, no dates) for coverage of THIS event: 1) in the local language,
-                   2) in English, 3) just the 2-3 key names in English. Put a rare name/title that could be spell-corrected in
-                   double quotes on its own, e.g. \"NAZA\" documentary>"]}"""
-EDITOR = """You are a TV news picture editor choosing the photo for the studio screen behind the anchor reading this story.
-Each candidate line: [n] caption | alt text | article headline | outlet | article date | source. Captions may be in any
-language. Choose photos that SHOW this story: the scene of this event or its aftermath, or its named subject (the person
-the story is about, the film's poster for a film story, the place/object involved). A captioned photo that names this
-event's place and date beats one without a caption. Never choose: a file/archive photo, a different or older event, a
-map, chart, graphic or logo, a screenshot, someone not in the story, a generic illustration, or a person who only reacted
-to or commented on the event (a spokesperson at a podium elsewhere) unless the story is about them. If the story is mainly
-about a person (see SUBJECT), a clear photo of THAT person beats photos of anyone else. For a disaster, attack or crash, a
-photo of the impact (the damage, the strike site, rescuers, people affected) beats a general or skyline view of the area.
-Judge ONLY from what the caption/headline says: a caption that does not describe the photo (an agency slug such as
-"TOPSHOT-UKRAINE-...", a bare place name) is weak evidence, and your "why" must restate what the caption says.
-Return JSON {"picks": [{"n": <number>, "why": "<8 words>"}]} - up to 8, best first; [] if none fits."""
-FILE_WORDS = ("file photo", "file image", "file pic", "archive", "archivo", "archives", "representational", "representative image",
-              "illustrative", "illustration", "ilustración", "imagen de referencia", "stock photo", "symbolic", "symbolbild",
-              "फाइल फोटो", "फ़ाइल फोटो", "प्रतीकात्मक", "صورة أرشيفية", "أرشيف", "תמונת ארכיון", "photo d'archives", "foto de archivo")
 JUNK_URL = re.compile(r"\.svg|logo|icon|avatar|sprite|placeholder|default[-_]|favicon|banner|/ads?/|1x1|pixel", re.I)
 WIKI_UA = {"User-Agent": "AnchorStudio/1.0 (DNL news video pipeline; https://global.democracynewslive.com)"}
 
@@ -327,64 +276,7 @@ def page_photos(url):
     return {"url": url, "title": (title or "")[:200], "date": date[:10], "photos": out[:4]}
 
 
-def _member_urls(story, cap=80):
-    """Article URLs of every fragment merged into this story (our DB, read-only). [] without DB access."""
-    ids = [f["id"] if isinstance(f, dict) else f for f in story.get("fragments") or []]
-    if not ids:
-        return []
-    try:
-        from . import select_stories
-        with select_stories._connect() as con, con.cursor() as cur:
-            cur.execute("SELECT a.url FROM analytics.story_cluster_members_v8 m JOIN articles a ON a.id = m.article_id "
-                        "WHERE m.story_id::text = ANY(%s) ORDER BY coalesce(a.source_tier, 9), a.published_at DESC NULLS LAST LIMIT %s",
-                        (ids, cap))
-            return [r["url"] if isinstance(r, dict) else r[0] for r in cur.fetchall()]
-    except Exception:  # noqa: BLE001 - no DB here: the story's own thumbnails still come through
-        return []
-
-
-def _news_rss(query, n=12):
-    """Bing News RSS (a published feed, not the retired API): article URLs for a local-language query."""
-    try:
-        t = _get("https://www.bing.com/news/search?format=rss&q=" + urllib.parse.quote(query))
-    except Exception:  # noqa: BLE001
-        return []
-    out = []
-    for link in re.findall(r"<item>.*?<link>(.*?)</link>", t, re.S):
-        q = urllib.parse.parse_qs(urllib.parse.urlparse(html.unescape(link)).query)
-        u = q.get("url", [html.unescape(link)])[0]
-        if "bing.com" not in urllib.parse.urlparse(u).netloc:
-            out.append(u)
-    return out[:n]
-
-
-def _wikidata(name, langs, what=""):
-    """{qid, names (all labels/aliases in en+local), p18 (Commons image URL)} for the Wikidata item whose description agrees
-    with `what` (the LLM's 2-4 word gloss), or None. Without that check "NAZA" (a film) linked to a French rapper's portrait."""
-    want = {w for w in re.findall(r"\w{4,}", _fold(what))}
-    try:
-        hits = json.loads(_get("https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&limit=7&language=en&search="
-                               + urllib.parse.quote(name), WIKI_UA))["search"]
-        hit = next((h for h in hits if want & set(re.findall(r"\w{4,}", _fold(h.get("description", ""))))), None)
-        if hit is None:
-            return None
-        qid = hit["id"]
-        e = json.loads(_get(f"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=labels|aliases|claims"
-                            f"&languages={'|'.join(langs)}&ids={qid}", WIKI_UA, limit=4_000_000))["entities"][qid]
-    except Exception:  # noqa: BLE001
-        return None
-    names = {v["value"] for v in e.get("labels", {}).values()} | {a["value"] for v in e.get("aliases", {}).values() for a in v}
-    p18 = (e.get("claims", {}).get("P18") or [{}])[0].get("mainsnak", {}).get("datavalue", {}).get("value")
-    return {"qid": qid, "names": names | {name}, "p18": f"https://commons.wikimedia.org/wiki/Special:FilePath/{urllib.parse.quote(p18)}?width=1600"
-            if p18 else None}
-
-
 SCENE_POOL, SCENE_RANK_STEP = 4, 0.01   # ponytail: rank step is a guess (SigLIP cosines ~0.05-0.20); tune on labelled picks
-TITLE_WORDS = set("""This That These Those With After Amid Over Into From Says What When Where Inside Under Against About Before
-Between During Their There Here Will Would Could Should Than Then Them They Your Ours Just More Most Powerful Major Deadly
-Breaking Leaving Meets Puts Push Names Slams Moves Fresh Again Still""".split())   # title-case words that are not names
-KEYED_PRIMARY = os.environ.get("WALL_KEYED_PRIMARY", "1") == "1"   # user 2026-10-22: keyed search on every story, its hits ranked first
-LAYER1_BELOW = 5          # (KEYED_PRIMARY=0 only) fewer captioned photos naming the story than this -> spend free-tier searches
 FREE = {"SERPAPI_KEY": 250, "TAVILY_API_KEY": 1000}      # free searches per key (account) per month, checked 2026-10-11
 USAGE = pathlib.Path.home() / ".config" / "anchor-studio" / "search_usage.json"
 
@@ -441,129 +333,6 @@ def _tavily(query, log):
     imgs = [x if isinstance(x, dict) else {"url": x} for x in r.get("images") or []]
     return [x["url"] for x in r.get("results") or [] if x.get("url")], \
         [{"url": x.get("url") or "", "description": x.get("description") or ""} for x in imgs]
-
-
-def _too_old(text, since):
-    """A date in the image URL/caption older than the event window (e.g. /2022/11/01/) = file photo."""
-    for y, m in re.findall(r"(20\d\d)[/_-](\d\d)(?:[/_-]\d\d)?", text):
-        if 1 <= int(m) <= 12 and f"{y}-{m}" < since[:7]:
-            return True
-    return False
-
-
-def _by_names(cands, names):
-    """No-LLM ranking: candidates whose caption + article headline name the most story names (2+), captioned first."""
-    def text(c):                                                    # a thumbnail's "title" is the story headline itself: not evidence
-        return c["caption"] + ("" if c["kind"] == "thumb" else " " + c["title"])
-    n = [(c["kind"] != "ai-desc", sum(x in _fold(text(c)) for x in names), bool(c["caption"]), -i) for i, c in enumerate(cands)]
-    return [(-t[3], f"names {t[1]} story words") for t in sorted(n, reverse=True) if t[1] >= 2][:8]   # real captions beat AI hints
-
-
-def pick(story, out_dir, log=print):
-    """[the one photo that shows this story] or [] (-> logo card). See the block comment above."""
-    from concurrent.futures import ThreadPoolExecutor
-    from datetime import date, timedelta
-    out_dir = pathlib.Path(out_dir)
-    day = story.get("date") or str(date.today())
-    since = str(date.fromisoformat(day[:10]) - timedelta(days=10)) if len(day) >= 10 else day
-    ctx = (f"STORY: {story['headline']}\n{story.get('deck') or ''}\nWHERE: {story.get('location') or story.get('country')}\nWHEN: {day}\n"
-           f"ARTICLE: {(story.get('body') or '')[:1500]}")
-    try:
-        plan = llm.chat_json(ENTITIES, ctx, temperature=0.1, max_tokens=3000, log=log)   # reasoning models think ~750 tokens first
-    except llm.LLMUnavailable:
-        plan = {}
-    lang = str(plan.get("lang") or "en")[:5]
-    ents = [e for e in plan.get("entities") or [] if isinstance(e, dict) and e.get("name")][:5]
-    linked = {e["name"]: _wikidata(e["name"], sorted({"en", lang}), str(e.get("what") or "")) for e in ents}
-    names = {_fold(n) for e in ents for n in ((linked.get(e["name"]) or {}).get("names") or {e["name"]}) if len(n) > 2}
-    if not names:                                                   # no LLM: the headline's proper names stand in
-        names = {re.sub(r"['’]s$", "", _fold(w)) for w in re.findall(r"\b[A-Z][\w'’-]{3,}", story["headline"]) if w not in TITLE_WORDS}
-    log(f"wall photo: entities {[(e['name'], e.get('type'), (linked.get(e['name']) or {}).get('qid')) for e in ents]} | lang {lang} | "
-        f"queries {plan.get('news_queries')}")
-
-    queries = [str(q) for q in plan.get("news_queries") or []][:3]
-    urls = list(dict.fromkeys(_member_urls(story) + [u for q in queries for u in _news_rss(q)]))[:110]
-    with ThreadPoolExecutor(16) as ex:
-        pages = [p for p in ex.map(page_photos, urls) if p]
-    cands, seen = [], set()
-
-    def add(ph, title, page, date, kind):
-        """Gate one photo (stock / old date / file-photo words / duplicate) and keep it as a candidate."""
-        cap = ph.get("caption") or ""
-        if not ph["img"] or ph["img"] in seen or any(s in ph["img"] for s in STOCK) or _too_old(f"{cap} {ph['img']}", since) \
-                or any(w in _fold(cap).replace("-", " ") for w in FILE_WORDS) or (date and date < since):   # old article: RSS can return last year's quake
-            return
-        seen.add(ph["img"])
-        cands.append(dict(ph, caption=cap, title=title, page=page, date=date, kind=kind,
-                          hit=kind not in ("ai-desc", "thumb") and any(n in _fold(cap + " " + title) for n in names),
-                          outlet=urllib.parse.urlparse(page or ph["img"]).netloc.replace("www.", "")))
-
-    for pg in pages:
-        for ph in pg["photos"]:
-            add(ph, pg["title"], pg["url"], pg["date"], ph["kind"])
-    strong = sum(1 for c in cands if c["hit"] and c["caption"])
-    if KEYED_PRIMARY or strong < LAYER1_BELOW:                       # keyed search (SerpAPI Google Images + Tavily news)
-        en = (queries[1:] or queries or [story["headline"]])
-        log(f"wall photo: {strong} captioned photos from free sources name the story - keyed search: {en[:2]}")
-        for h in _serpapi_images(en[0], log):
-            add(h, h["caption"], h["page"], "", "search")
-        art, imgs = _tavily(en[-1], log)
-        with ThreadPoolExecutor(8) as ex:
-            for pg in [p for p in ex.map(page_photos, art) if p]:
-                for ph in pg["photos"]:
-                    add(ph, pg["title"], pg["url"], pg["date"], ph["kind"])
-        for im in imgs:                                              # Tavily's own AI description: a hint, never proof
-            add({"img": im["url"], "caption": f"(AI description) {im['description']}" if im["description"] else ""},
-                "", "", "", "ai-desc")
-    for u in story.get("images") or []:                             # the story's own thumbnails (no caption) as a last resort
-        add({"img": u, "caption": ""}, story["headline"], "", "", "thumb")
-    cands.sort(key=lambda c: (not c["hit"], not c["caption"], KEYED_PRIMARY and c["kind"] != "search", c["kind"] == "thumb"))
-    cands = cands[:70]
-    log(f"wall photo: {len(pages)} article pages, {len(cands)} candidates ({sum(c['hit'] for c in cands)} name the story, "
-        f"{sum(bool(c['caption']) for c in cands)} captioned)")
-
-    order = []
-    if cands:
-        lines = "\n".join(f"[{i}] {c['caption'] or '(no caption)'} | {c['title']} | {c['outlet']} | {c['date'] or '?'} | {c['kind']}"
-                          for i, c in enumerate(cands))
-        try:
-            res = llm.chat_json(EDITOR, ctx[:900] + f"\nSUBJECT: {plan.get('subject') or ''}\n\nCANDIDATES:\n" + lines, temperature=0.0, max_tokens=4000, log=log)
-            order = [(int(p["n"]), str(p.get("why") or "")) for p in res.get("picks") or []
-                     if isinstance(p, dict) and str(p.get("n", "")).isdigit() and int(p["n"]) < len(cands)]
-        except llm.LLMUnavailable:
-            order = _by_names(cands, names)
-    subj = next((e for e in ents if e["name"] == plan.get("subject") and e.get("type") == "person"), None)
-    if subj:                                                        # the LLM still picked Trump for a story about his new press secretary
-        sur = _fold(subj["name"].split()[-1])
-        order.sort(key=lambda o: sur not in _fold(cands[o[0]]["caption"] + " " + cands[o[0]]["title"]))
-    ok = []                                                         # up to 4 photos the captions qualified and the filters passed
-    for i, why in order:
-        c = cands[i]
-        got = fetch([c["img"]], out_dir, log=log, keep=1)
-        if got and got[0]["w"] >= 900:
-            ok.append(dict(got[0], caption=c["caption"], title=c["title"], page=c["page"], outlet=c["outlet"], why=why, n=i))
-            if len(ok) >= SCENE_POOL:
-                break
-    if ok:
-        ideal = str(plan.get("ideal_photo") or f"a news photograph of: {story['headline']}")
-        for rank, p in enumerate(ok):                               # scene match, minus a small penalty per editor rank
-            p["scene"] = _scene(p["path"], ideal)
-            p["score"] = (p["scene"] or 0) - SCENE_RANK_STEP * rank
-        best = max(ok, key=lambda p: p["score"])
-        log(f"wall photo: ideal '{ideal[:90]}' | scene " + ", ".join(f"[{p['n']}] {p['scene'] if p['scene'] is None else round(p['scene'], 3)}"
-                                                                      for p in ok))
-        log(f"wall photo: [{best['n']}] {best['outlet']} '{(best['caption'] or best['title'])[:90]}' ({best['w']}x{best['h']}) - {best['why']}")
-        return [best]
-    ents.sort(key=lambda e: e["name"] != plan.get("subject"))     # the main subject's own image first
-    for e in ents:                                                  # the subject itself: portrait / poster / landmark
-        w = linked.get(e["name"]) or {}
-        if w.get("p18") and e.get("type") in ("person", "work", "place", "object"):
-            got = fetch([w["p18"]], out_dir, log=log, keep=1, max_text=0.5 if e.get("type") == "work" else 0.04, min_ar=0.5)
-            if got:
-                log(f"wall photo: subject image of {e['name']} ({w['qid']}) from Wikimedia Commons")
-                return [dict(got[0], caption=f"{e['name']} (Wikimedia Commons)", page=w["p18"], outlet="commons.wikimedia.org")]
-    log("wall photo: nothing shows this story - logo card")
-    return []
 
 
 def title_card(title, out):

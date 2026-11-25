@@ -2,7 +2,7 @@ import { useEffect, useState, Suspense } from "react";
 import { Link, Navigate, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { CaretRight, Check, Lock, Waveform, MagnifyingGlass, PencilSimpleLine, FilmStrip, Microphone, VideoCamera } from "@phosphor-icons/react";
-import { useStore, voiceProgress, retryJob, isFixture, switchFormat } from "@/data/store";
+import { useStore, voiceProgress, retryJob, switchFormat } from "@/data/store";
 import type { Project, Stage } from "@/data/types";
 import { Brand } from "./shell";
 import { Button, Dialog, Tag, Tip, cx, istTime, Ring } from "./ui";
@@ -68,13 +68,6 @@ export function StoryFrame() {
             <div className="mx-auto flex min-h-9 max-w-[1680px] items-center gap-2.5 px-4 py-1.5 text-[12.5px] text-g8 sm:px-5">
               <Lock size={13} />
               {p.stage === "done" ? "Rendered. Post it from this page; the story is read-only." : `In the render queue${p.render?.waitNote ? ` (${p.render.waitNote})` : ""}. This story is read-only until it finishes or you take it out of the queue.`}
-            </div>
-          </div>
-        )}
-        {isFixture(p.id) && (
-          <div className="border-t border-g4 bg-g1">
-            <div className="mx-auto flex min-h-8 max-w-[1680px] items-center gap-2 px-4 text-[12px] text-g8 sm:px-5">
-              <Tag tone="edge">Dev fixture</Tag>Clip checker run F9. Edits stay in this browser; nothing is sent to the API.
             </div>
           </div>
         )}

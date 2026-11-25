@@ -18,7 +18,6 @@ export interface State {
   workspace: Workspace | null;
   picks: Pick[];
   hiddenPicks: Id[];
-  pickBodies: Record<Id, string>;
   anchors: Anchor[];
   projects: Record<Id, Project>;
   order: Id[];
@@ -31,7 +30,7 @@ export interface State {
 }
 
 let state: State = {
-  ready: false, signedIn: false, user: null, workspace: null, picks: [], hiddenPicks: [], pickBodies: {},
+  ready: false, signedIn: false, user: null, workspace: null, picks: [], hiddenPicks: [],
   anchors: [], projects: {}, order: [], queue: [], library: [],
   defaults: { format: "anchor_vo", length: 60, captions: "file", aiLabel: true, outro: true },
   formats: ["anchor_vo", "anchor_only"],
@@ -54,12 +53,7 @@ export const getState = () => state;
 
 class ApiError extends Error {}
 
-/** The dev-only VO-only fixture project (src/data/fixture.ts). It lives in this browser only: nothing about it goes to the API. */
-export const FIXTURE_ID = "dev-vo-F9";
-export const isFixture = (id: Id) => import.meta.env.DEV && id === FIXTURE_ID;
-
 async function api<T>(path: string, init?: RequestInit & { json?: unknown }): Promise<T> {
-  if (import.meta.env.DEV && path.includes(FIXTURE_ID)) throw new ApiError("The dev fixture stays in this browser and is never sent to the API.");
   const r = await fetch(path, {
     ...init, credentials: "same-origin",
     headers: init?.json !== undefined ? { "Content-Type": "application/json" } : undefined,
@@ -84,7 +78,7 @@ async function act<T>(p: Promise<T>): Promise<T | null> {
 }
 
 interface Desk {
-  user: User; workspace: Workspace; picks: Pick[]; pickBodies: Record<Id, string>; hiddenPicks: Id[]; defaults: Defaults;
+  user: User; workspace: Workspace; picks: Pick[]; hiddenPicks: Id[]; defaults: Defaults;
   anchors: Anchor[]; projects: Project[]; jobs: Record<Id, Job>; queue: RenderJob[]; library: LibraryItem[];
   formats?: Format[];       // absent: an API from before VO only
 }
@@ -137,7 +131,6 @@ function body(p: Project) {
 }
 
 function scheduleSave(id: Id) {
-  if (isFixture(id)) return;
   dirty.add(id);
   editNo[id] = (editNo[id] ?? 0) + 1;
   clearTimeout(saveTimers[id]);
@@ -170,14 +163,11 @@ const failedSeen = new Set<string>();
 function apply(desk: Desk) {
   set((d) => {
     d.ready = true; d.signedIn = true; d.user = desk.user; d.workspace = desk.workspace;
-    d.picks = desk.picks; d.pickBodies = desk.pickBodies; d.hiddenPicks = desk.hiddenPicks; d.defaults = desk.defaults;
+    d.picks = desk.picks; d.hiddenPicks = desk.hiddenPicks; d.defaults = desk.defaults;
     d.anchors = desk.anchors; d.queue = desk.queue; d.library = desk.library; d.jobs = desk.jobs;
     d.formats = desk.formats ?? ["anchor_vo", "anchor_only"];
     d.projects = Object.fromEntries(desk.projects.map((p) => [p.id, dirty.has(p.id) && d.projects[p.id] ? overlay(p, d.projects[p.id]) : p]));
     d.order = desk.projects.map((p) => p.id);
-    const fx = import.meta.env.DEV ? state.projects[FIXTURE_ID] : undefined;   // the server never has it
-    if (fx) d.projects[FIXTURE_ID] = fx.anchorId ? fx : { ...fx, anchorId: desk.anchors.find((a) => a.offered)?.id ?? "" };
-    if (fx && state.jobs[FIXTURE_ID]) d.jobs[FIXTURE_ID] = state.jobs[FIXTURE_ID];
   });
   for (const [id, j] of Object.entries(desk.jobs)) {
     const key = `${id}:${j.kind}:${j.note}`;
@@ -198,10 +188,6 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 export async function boot() {
   if (state.ready) return;
-  if (import.meta.env.DEV) {
-    const p = await import("./fixture").then((m) => m.buildFixture()).catch(() => null);   // needs public/seed/media/vo/F9 (local only)
-    if (p) set((d) => { d.projects[p.id] = p; });
-  }
   try {
     apply(await api<Desk>("/api/desk"));
     void poll();
@@ -397,7 +383,6 @@ export function revoice(id: Id, sid: Id, note: string) {
 }
 /** Run a job again; `sid` narrows the clip check to one beat. */
 export function retryJob(id: Id, job: Job["kind"], sid?: Id) {
-  if (isFixture(id)) { if (job === "check") devCheck(id, sid); return; }
   set((d) => {
     d.jobs[id] = { kind: job, progress: 0, note: "Starting again", ...(sid ? { parts: { [sid]: "Checking again" } } : {}) };
     const e = d.projects[id]?.edit; if (job === "check" && !sid && e) { e.state = "checking"; e.progress = 0; }
@@ -465,17 +450,6 @@ export const checkAgain = (id: Id, sid?: Id) => retryJob(id, "check", sid);
 export const setCutSound = (id: Id, sid: Id, cid: Id, sound: string) => editBeat(id, sid, (b) => {
   const c = b.cuts.find((x) => x.id === cid); if (c) c.sound = sound.slice(0, 80);
 });
-
-/** The dev fixture's stand-in for the clip checker: shows the checking state for a few seconds, changes nothing. */
-function devCheck(id: Id, sid?: Id) {
-  const n = 8;
-  for (let i = 0; i <= n; i++) setTimeout(() => set((d) => {
-    const e = d.projects[id]?.edit; if (!e) return;
-    if (i === n) { delete d.jobs[id]; if (!sid) { e.state = "ready"; delete e.progress; } return; }
-    d.jobs[id] = { kind: "check", progress: i / n, note: "Checking the clips", ...(sid ? { parts: { [sid]: "Checking again" } } : {}) };
-    if (!sid) { e.state = "checking"; e.progress = i / n; }
-  }), i * 450);
-}
 
 // ---------------------------------------------------------------- footage keywords (the footage repo, via the server)
 

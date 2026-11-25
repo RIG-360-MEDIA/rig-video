@@ -55,11 +55,6 @@ def kill(log=print):
     log("ComfyUI killed")
 
 
-def nodes_present(names):
-    info = _get("/object_info", 60)
-    return [n for n in names if n not in info]
-
-
 def _queued(g):
     """prompt_id of a queued/running copy of graph g (a submit that timed out may still have been accepted)."""
     q = _get("/queue", 30)
@@ -129,15 +124,3 @@ def newest(pattern):
     return c[-1] if c else None
 
 
-def stage_seed(run):
-    """Copy the finished seed into input/ under the name the chain job expects."""
-    seed = newest(f"video/{run}_seed_*.mp4")
-    if not seed:
-        raise FileNotFoundError(f"no seed output for {run}")
-    dst = COMFY_IN / f"{run}_seed_00001_.mp4"
-    shutil.copy2(seed, dst)
-    return pathlib.Path(seed)
-
-
-def chain_final(run):
-    return newest(f"h3_chains/{run}/final/*.mp4")

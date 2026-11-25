@@ -200,21 +200,6 @@ def load_db(log=print):
              "followup": r["id"] in follow, "editor": None, "src": set(r["src"] or [])} for r in rows]
 
 
-def refresh(fragment_ids, lead_id):
-    """(article count now across the event's fragments, lead's current body, lead's current headline) — db mode."""
-    with _connect() as con:
-        n = con.execute("SELECT coalesce(sum(article_count), 0) FROM analytics.story_clusters_v8 WHERE story_id::text = ANY(%s)",
-                        (list(fragment_ids),)).fetchone()[0]
-        row = con.execute("SELECT body, headline FROM analytics.story_generated_v8 WHERE story_id::text = %s "
-                          "ORDER BY updated_at DESC LIMIT 1", (lead_id,)).fetchone()
-    return int(n), (row or (None, None))[0], (row or (None, None))[1]
-
-
-def editor_status(ids):
-    """Fresh kill/hold check right before a story renders. Returns {id: 'killed'} for stories no longer public."""
-    return {i: "killed" for i in ids if site_live(i) is False}
-
-
 # ---------------------------------------------------------------- events
 STOP = set("year old claim life live death dead kill the and for with from over amid after into says said new its his her their that this are was were has have "
            "will who what how why than more most first last one two three inside behind within against between".split())

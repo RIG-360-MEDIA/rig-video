@@ -1,10 +1,7 @@
-"""POST (CPU, runs while the next story renders): colour-lock -> wall composite -> LT package + DNL outro.
-
-Wraps the existing tools (pipeline/tools/colorlock.py, wall_comp.py, lt_remotion/apply_broadcast_package.mjs).
-Wall corners are stored per set and re-verified on every render: the stored quad is shifted up to +-20 px to the
-best edge alignment with the plate; if alignment is poor the composite is SKIPPED (H3's own wall stays) and flagged -
-a misplaced overlay is worse than none.
-"""
+"""Anchor video finishing helpers used by tools/sourcetrack/assemble_*.py: refine_quad() finds the studio wall's corners
+on the rendered plate (shifted up to +-20 px to the best edge fit; skipped if alignment is poor, so H3's own wall stays),
+lt_story() builds the graphics package input for lt_remotion/apply_broadcast_package.mjs, plus NODE, CHROME_LIBS
+(Remotion's headless Chrome libraries) and OUTRO (the DNL outro)."""
 import json
 import os
 import pathlib
@@ -22,17 +19,6 @@ SETS = {   # ponytail: one set today; quad measured on the plate, refined per re
 OUTRO = APP / "DNL Outro.mp4"
 CHROME_LIBS = pathlib.Path.home() / ".local" / "chrome-libs" / "root" / "usr" / "lib" / "x86_64-linux-gnu"
 NODE = os.environ.get("ANCHOR_NODE", str(next(iter(sorted(pathlib.Path.home().glob(".nvm/versions/node/v*/bin/node"))), "node")))
-
-
-def boundaries(seed_job, chain_job):
-    """Shot boundaries in frames: seed length, then each shot adds L-39 (context overlap)."""
-    s = json.load(open(seed_job)); s = s.get("prompt", s)
-    g = json.load(open(chain_job)); g = g.get("prompt", g)
-    cum, out = s["136"]["inputs"]["length"], []
-    for sh in json.loads(g["1700"]["inputs"]["plan_json"])["shots"]:
-        out.append(cum)
-        cum += sh["length"] - 39
-    return out, cum     # starts of shots 2..n, total frames
 
 
 def refine_quad(video, set_name="set7", log=print):
@@ -70,30 +56,3 @@ def lt_story(meta, ticker_items):
             "ticker": {"tag": "LIVE", "speedPxPerSecond": 90, "items": ticker_items}, "nameTag": {"holdSeconds": 4.5}}
 
 
-def run(raw, work, bounds, wall_video, meta, ticker_items, log=print):
-    """raw chain video -> work/final.mp4. Returns dict of produced paths + flags."""
-    work = pathlib.Path(work)
-    work.mkdir(parents=True, exist_ok=True)
-    flags = []
-    if not OUTRO.exists():
-        raise FileNotFoundError(f"DNL outro missing at {OUTRO} - final would be < 60 s")
-    cl = work / "colorlocked.mp4"
-    subprocess.run([TOOLS_PY, str(PIPE / "tools" / "colorlock.py"), str(raw), str(cl), ",".join(map(str, bounds))],
-                   check=True, capture_output=True)
-    quad = refine_quad(cl, log=log)
-    walled = work / "walled.mp4"
-    if quad:
-        subprocess.run([TOOLS_PY, str(PIPE / "tools" / "wall_comp.py"), str(cl), str(wall_video), "0", str(walled), quad, "clean"],
-                       check=True, capture_output=True)
-    else:
-        flags.append("wall composite skipped: wall not where the set says (kept H3's own wall)")
-        walled = cl
-    story = work / "lt_story.json"
-    story.write_text(json.dumps(lt_story(meta, ticker_items), indent=2, ensure_ascii=False))
-    final = work / "final.mp4"
-    env = dict(os.environ, PATH=str(pathlib.Path(NODE).parent) + os.pathsep + os.environ.get("PATH", ""))
-    if CHROME_LIBS.exists():   # NSS libs unpacked in user space (no OS packages installed) for Remotion's headless Chrome
-        env["LD_LIBRARY_PATH"] = str(CHROME_LIBS) + os.pathsep + env.get("LD_LIBRARY_PATH", "")
-    subprocess.run([NODE, str(APP / "lt_remotion" / "apply_broadcast_package.mjs"), str(walled), str(story), str(final)],
-                   check=True, cwd=APP, env=env, capture_output=True)
-    return {"colorlocked": cl, "walled": walled, "final": final, "flags": flags, "quad": quad}

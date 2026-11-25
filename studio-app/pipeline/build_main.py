@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Main pipeline job builder: seed + chain. Production recipe = "t8k" (baseline/RECIPE_CURRENT.md, locked 2026-10-06):
+"""Main pipeline job builder: seed + chain. Production recipe = "t8k" (docs/design/RECIPE_CURRENT.md, locked 2026-10-06):
 seed = v7 (FirstBlockCache 0.10 + sparse attention, 20 steps), chain = 8 steps + Kijai Acc-8Step LoRA at 1.0.
 
 usage: python3 pipeline/build_main.py story.json out_dir/ [t8k|safe|v4|v7]
@@ -107,7 +107,7 @@ VARIANTS = {
     "safe": {"fbc": ("H3 Safe — 0.08 / max 2", 0.08), "sparse": None},
     "v4": {"fbc": ("H3 Fast — 0.10 / max 2", 0.10), "sparse": None},
     "v7": {"fbc": ("H3 Fast — 0.10 / max 2", 0.10), "sparse": {}},
-    # PRODUCTION (baseline/RECIPE_CURRENT.md, user-approved 2026-10-06): seed = v7; chain = 8 steps + Kijai Ref2VA
+    # PRODUCTION (docs/design/RECIPE_CURRENT.md, user-approved 2026-10-06): seed = v7; chain = 8 steps + Kijai Ref2VA
     # 8-step accelerator LoRA at 1.0 (lcm/beta unchanged). ~35 min per full video vs ~61 for v7.
     "t8k": {"fbc": ("H3 Fast — 0.10 / max 2", 0.10), "sparse": {}, "chain_lora": "MiniMax-H3-Ref2VA-Acc-8Step_pruned_comfy.safetensors",
             "chain_steps": 8},

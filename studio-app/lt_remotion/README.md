@@ -1,6 +1,6 @@
 # Broadcast Package (final pipeline stage)
 
-Remotion-based lower-third + name-tag + ticker overlay, applied as the **last step** of the H3 main pipeline — after the video is generated, chained, and color-locked (see `../baseline/H3_MAIN_VERSION_LOCKED.md`).
+Remotion-based lower-third + name-tag + ticker overlay, applied as the **last step** of the H3 main pipeline — after the video is generated, chained, and color-locked.
 
 ## What it produces (per story, driven entirely by content — nothing hardcoded)
 

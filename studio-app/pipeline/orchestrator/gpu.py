@@ -19,7 +19,7 @@ import time
 
 SMI = "/usr/lib/wsl/lib/nvidia-smi" if os.path.exists("/usr/lib/wsl/lib/nvidia-smi") else "nvidia-smi"
 SERVICES = ["ollama-robin.service", "pt-worker-box-gpu.service", "collect-ollama.service", "vo-vision.service"]   # vo-vision: the VO clip checker's model (12.5 GB awake)   # systemd --user units we pause (as t8kf_run.sh does)
-# Transient unit: stopping it deletes it, so restore relaunches it exactly as baseline/HANDOFF.md section 1 documents.
+# Transient unit: stopping it deletes it, so restore relaunches it with the same systemd-run line (TRANSIENT below).
 TRANSIENT = {"collect-vision-llm.service": ["systemd-run", "--user", "--unit=collect-vision-llm", "--slice=app.slice", "/usr/bin/bash",
                                            "-c", "exec bash ~/collect-vision/serve_vision.sh >> ~/collect-vision/vision-llm.log 2>&1"]}
 LEAVE_ALONE = ("embed_server.py", "embed_launch.sh")               # small, proven compatible, self-respawning

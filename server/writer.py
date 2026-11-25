@@ -183,7 +183,7 @@ def notes(sc, article, a_words, v_words):
 
 
 # ------------------------------------------------------------------ VO-only (no anchor on screen; footage all the way)
-# Rules: RIG-NEWS-AI- docs/rig-video/vo-only/SCRIPT_RULEBOOK.md (item numbers in the comments below).
+# Rules: docs/design/vo-only/SCRIPT_RULEBOOK.md (item numbers in the comments below).
 
 VO_WPS = 2.6        # spoken words a second with breaths between beats (hand scripts, 2026-11-20 study)
 
