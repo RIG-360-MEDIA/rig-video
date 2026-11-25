@@ -64,8 +64,8 @@ if [ -s "$HOME/.config/rigvideo/tunnel.token" ]; then                    # publi
 fi
 systemctl --user is-active -q warp-proxy || systemctl --user start warp-proxy
 [ -n "$VIS" ] && systemctl --user restart vo-vision || systemctl --user is-active -q vo-vision || systemctl --user start vo-vision
-if [ -n "$FOOT" ] && curl -sf -m 3 localhost:8787/api/health >/dev/null; then    # running on old code: start it again
-  bash "$A/studio-app/pipeline/tools/footage/start_backend.sh" || say "footage backend restart failed (the worker starts it when needed)"
+if [ -n "$FOOT" ]; then   # running on old code: stop it; the worker starts it on its next search (a process started here
+  pkill -f "[u]vicorn app.main:app --host 127.0.0.1 --port 8787" || true    # would die with the Actions job, 2026-11-25)
 fi
 systemctl --user restart rigvideo-api                                       # KillMode=process: running jobs keep going
 
