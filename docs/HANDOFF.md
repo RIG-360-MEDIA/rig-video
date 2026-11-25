@@ -635,6 +635,7 @@ while signed in.
 | Symptom | What it means / what to do |
 |---|---|
 | Searches find 0 videos; checks download nothing; "YouTube is refusing our searches" | YouTube blocks the office IP (t3, t7 and t8 share it). Downloads must go through WARP. Check `systemctl --user status warp-proxy`, then `curl -x socks5h://127.0.0.1:18091 -o /dev/null -w '%{http_code}' https://www.youtube.com/generate_204` must print `204`. Restart `warp-proxy` if not. **Never start a second wireproxy on the same WARP key**; the two connections clash and both hang. |
+| Downloads crawl or fail with "Sign in to confirm you're not a bot"; yt-dlp warns "n challenge solving failed"; the clip check finds 0 shots and stories are given an anchor | YouTube changed its player and our yt-dlp can no longer solve its challenge (2026-11-25, player `b485e332`). Update it in the footage environment: `~/.local/bin/uv pip install --python ~/anchor-studio/repos/social_verifier/.venv/bin/python -U "yt-dlp[default]" yt-dlp-ejs`, check with `ytdlp_node.sh -v --simulate <video URL>` (no `[jsc]` error), then save the versions in `hosts/t7/requirements/footage.txt`. Re-run the clip check on stories it hit. |
 | No picks today | `rigvideo-data/selection/log.txt`. The DB is reached over Tailscale; `db.env` holds the read-only URL. |
 | "The script writer is busy" | t3 is shared with other teams. Daily stories wait and retry by themselves; an editor tries again later. |
 | A story says "Interrupted" | It was cut off by restarts more than twice. Press *Try again* on the site. |
