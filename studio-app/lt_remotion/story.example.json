@@ -1,0 +1,23 @@
+{
+  "anchorName": "David Bennett",
+  "anchorTitle": "News Anchor",
+  "headline": "RUSSIA WARNS OF 'SEMI-MILITARY' RESPONSE TO UK MISSILE PLAN",
+  "location": "LONDON",
+  "lowerThird": {
+    "kicker": "BREAKING NEWS",
+    "holdSeconds": 8
+  },
+  "ticker": {
+    "tag": "LIVE",
+    "items": [
+      "Andrei Fedorov: raids could trigger a 'semi-military' response from unknown sources",
+      "UK PM to press Trump on Ukraine air defences in New York next month",
+      "Kremlin: military 'already gathering data' on missile production sites",
+      "Burnham hits back: 'Who started the fire? That's the question, isn't it?'",
+      "Ukraine seeks 300 Patriot interceptors from allies ahead of winter"
+    ]
+  },
+  "nameTag": {
+    "holdSeconds": 4.5
+  }
+}

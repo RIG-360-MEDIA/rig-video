@@ -1,0 +1,17 @@
+# RIG-Video script writer on trijya-3 (systemd --user). Chosen 2026-11-13 after reading 5 real DNL picks x 5 variants
+# (Gemma 4 26B / Qwen3.6-35B byteshape / Qwen3.6-35B Unsloth Q4_K_XL, thinking on/off): Gemma, thinking off, had the fewest
+# wrong or invented facts, no typos and kept to length; ~22 tok/s, ~30 s a script. Qwen invented scene details; thinking
+# ran out of tokens or invented more. --fit places the MoE experts to fit the 12 GB next to the tenants (1 GB margin).
+# Unloaded by gpu.sh while the voice model runs. ~/rigvideo/llm/api.key (mode 600) = RIGVIDEO_WRITER_KEY from t7's api.env.
+[Unit]
+Description=RIG-Video script writer (llama.cpp, Gemma 4 26B-A4B UD-Q4_K_XL), Tailscale only, port 8780
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/rigvideo/llm
+ExecStart=%h/rigvideo/llm/llama.cpp/build/bin/llama-server -m models/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf --alias writer --fit on -fitt 2560 -t 12 -fa on -c 32768 -np 1 -b 2048 -ub 2048 --jinja --reasoning off --host 100.99.155.88 --port 8780 --api-key-file %h/rigvideo/llm/api.key
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

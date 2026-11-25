@@ -1,0 +1,11 @@
+[Unit]
+Description=Cloudflare WARP SOCKS5 proxy for YouTube downloads (127.0.0.1:18091), userspace wireproxy
+After=network-online.target
+
+[Service]
+ExecStart=/home/trijya-7/warp/wireproxy -c /home/trijya-7/warp/wireproxy.conf
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

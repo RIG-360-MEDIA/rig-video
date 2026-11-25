@@ -1,0 +1,499 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "110": {
+    "class_type": "MiniMaxH3ReferenceToVideo",
+    "inputs": {
+      "audio_vae": [
+        "4",
+        0
+      ],
+      "clip": [
+        "2",
+        0
+      ],
+      "height": [
+        "1702",
+        9
+      ],
+      "length": [
+        "1702",
+        6
+      ],
+      "prompt": [
+        "1702",
+        4
+      ],
+      "ref_image_size": "match",
+      "vae": [
+        "3",
+        0
+      ],
+      "width": [
+        "1702",
+        8
+      ]
+    }
+  },
+  "120": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": [
+        "1702",
+        5
+      ]
+    }
+  },
+  "121": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "conditioning": [
+        "1703",
+        0
+      ],
+      "model": [
+        "5",
+        0
+      ]
+    }
+  },
+  "122": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "lcm"
+    }
+  },
+  "123": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "denoise": 1.0,
+      "model": [
+        "5",
+        0
+      ],
+      "scheduler": "beta",
+      "steps": [
+        "1702",
+        7
+      ]
+    }
+  },
+  "124": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "guider": [
+        "121",
+        0
+      ],
+      "latent_image": [
+        "1703",
+        3
+      ],
+      "noise": [
+        "120",
+        0
+      ],
+      "sampler": [
+        "122",
+        0
+      ],
+      "sigmas": [
+        "123",
+        0
+      ]
+    }
+  },
+  "130": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "124",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "131": {
+    "class_type": "VAEDecodeAudio",
+    "inputs": {
+      "samples": [
+        "124",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "132": {
+    "class_type": "MiniMaxH3LoopTrim",
+    "inputs": {
+      "audio": [
+        "131",
+        0
+      ],
+      "fps": 24.0,
+      "images": [
+        "130",
+        0
+      ],
+      "match_tail": true,
+      "retain_overlap_frames": 39,
+      "state": [
+        "1702",
+        0
+      ],
+      "trim_frames": [
+        "1703",
+        1
+      ]
+    }
+  },
+  "1635": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "lora_name": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+      "model": [
+        "1941",
+        0
+      ],
+      "strength_model": 0.0
+    }
+  },
+  "1700": {
+    "class_type": "MiniMaxH3ChainPlan",
+    "inputs": {
+      "anchor_mode": "head",
+      "audio_context_length": 39,
+      "audio_mode": "generated_audio",
+      "base_seed": 0,
+      "chain_policy": [
+        "1954",
+        0
+      ],
+      "context_length": 39,
+      "continuation_mode": "audio_feathered_av",
+      "crop": "disabled",
+      "default_duration_seconds": 8.0,
+      "default_steps": 20,
+      "encode_mode": "video",
+      "generation_fingerprint": [
+        "1947",
+        1
+      ],
+      "height": 736,
+      "plan_json": "{\n  \"prompt_prefix\": \"\",\n  \"shots\": [\n    {\n      \"id\": \"story_2\",\n      \"prompt\": \"subject_definitions:\\n<Subject 1> is the same real male television news anchor established by the incoming protected video prefix ending the previous segment - his identity, face, hands, wardrobe, framing, lighting, and color grading continue exactly as carried forward by that prefix, with no separate image or picture reference of any kind.\\n\\nsummary:\\nThe anchor continues into the next story beat, explaining how the scheme operated over time.\\n\\nretention_analysis:\\n<Subject 1> is carried forward unchanged from the incoming protected video prefix: face and hand skin texture with visible pores, natural creases, and a light key-light sheen on the forehead and nose bridge; deep brown eyes with fine natural iris texture and clear catchlights; natural ear shape; short dark hair with individual strand highlights from the rim light; the charcoal-navy wool suit with visible fabric weave, white cotton shirt collar, and deep burgundy tie with its dimple; the waist-up desk framing with both hands resting on the glass desk, all ten fingers individually separated and never merging or fusing together at any point along their length; the cool-blue city-skyline panel on the left and world-map video wall on the right; the three-point studio lighting and its catchlights; and the exact color grading, saturation, white balance, and exposure established in the incoming prefix, with zero drift and no orange or amber color cast on the skin.\\n\\ndetailed_description:\\nThe camera remains completely fixed on the exact same waist-up framing inherited from the incoming protected prefix - full desk, both hands visible - with absolutely no zoom, push, pull, pan, or movement of any kind. The exact color grading, saturation, white balance and exposure of the incoming protected prefix must be treated as the fixed reference for this entire segment, with zero color drift, zero saturation shift, and zero exposure change from that reference. The white balance stays neutral and true-to-life, with no orange, amber, or warm color cast on his skin. The world-map panel shows only a plain map with no text, no tickers, no headlines, and no lower-third graphics anywhere in the shot. The anchor continues speaking with brisk, confident, professional broadcast delivery, like a real news reporter live on air, at a natural reporting pace, with only brief natural pauses at sentence boundaries, never a long dead pause and never rushed: <d>[English]Prosecutors say the scheme quietly drained retirement accounts for nearly three years, moving stolen funds through a maze of shell companies before anyone noticed the money was gone.</d> When he speaks his teeth are clearly visible and well-defined, not blurred or indistinct. As he speaks his eyebrows lift subtly on emphasis, he blinks naturally about once every two to three seconds, his eyes make tiny involuntary darts, his head tilts a few degrees, his hands rest on the desk and occasionally shift naturally - a slight repositioning, a light finger tap, fingers briefly curling and resettling while always staying individually separated and never touching or merging into one another - rather than staying perfectly frozen, and his chest rises and falls with quiet breathing.\\n\\noverall_soundscape:\\nContinue the same quiet broadcast studio room tone across the boundary without a seam: a faint low air-conditioning hum and the close presence of the lapel mic on his voice, with a barely audible rustle of fabric as he shifts slightly. No audience, no applause.\\n\\nnon_diegetic_music:\\nA subtle, low-key television news broadcast underscore continues beneath his voice - a steady, understated instrumental bed with soft synth pads and a light corporate rhythmic pulse, mixed well below the dialogue, never swelling, never overpowering, never distracting from the spoken words.\",\n      \"length\": 243,\n      \"steps\": 20,\n      \"seed\": \"61102\"\n    },\n    {\n      \"id\": \"story_3\",\n      \"prompt\": \"subject_definitions:\\n<Subject 1> is the same real male television news anchor established by the incoming protected video prefix ending the previous segment - his identity, face, hands, wardrobe, framing, lighting, and color grading continue exactly as carried forward by that prefix, with no separate image or picture reference of any kind.\\n\\nsummary:\\nThe anchor updates viewers on the ongoing investigation into the case.\\n\\nretention_analysis:\\n<Subject 1> is carried forward unchanged from the incoming protected video prefix: face and hand skin texture with visible pores, natural creases, and a light key-light sheen on the forehead and nose bridge; deep brown eyes with fine natural iris texture and clear catchlights; natural ear shape; short dark hair with individual strand highlights from the rim light; the charcoal-navy wool suit with visible fabric weave, white cotton shirt collar, and deep burgundy tie with its dimple; the waist-up desk framing with both hands resting on the glass desk, all ten fingers individually separated and never merging or fusing together at any point along their length; the cool-blue city-skyline panel on the left and world-map video wall on the right; the three-point studio lighting and its catchlights; and the exact color grading, saturation, white balance, and exposure established in the incoming prefix, with zero drift and no orange or amber color cast on the skin.\\n\\ndetailed_description:\\nThe camera remains completely fixed on the exact same waist-up framing inherited from the incoming protected prefix - full desk, both hands visible - with absolutely no zoom, push, pull, pan, or movement of any kind. The exact color grading, saturation, white balance and exposure of the incoming protected prefix must be treated as the fixed reference for this entire segment, with zero color drift, zero saturation shift, and zero exposure change from that reference. The white balance stays neutral and true-to-life, with no orange, amber, or warm color cast on his skin. The world-map panel shows only a plain map with no text, no tickers, no headlines, and no lower-third graphics anywhere in the shot. The anchor continues speaking with brisk, confident, professional broadcast delivery, like a real news reporter live on air, at a natural reporting pace, with only brief natural pauses at sentence boundaries, never a long dead pause and never rushed: <d>[English]Tonight, investigators are combing through thousands of pages of records, piecing together exactly how the operation managed to stay hidden in plain sight for so long.</d> When he speaks his teeth are clearly visible and well-defined, not blurred or indistinct. As he speaks his eyebrows lift subtly on emphasis, he blinks naturally about once every two to three seconds, his eyes make tiny involuntary darts, his head tilts a few degrees, his hands rest on the desk and occasionally shift naturally - a slight repositioning, a light finger tap, fingers briefly curling and resettling while always staying individually separated and never touching or merging into one another - rather than staying perfectly frozen, and his chest rises and falls with quiet breathing.\\n\\noverall_soundscape:\\nContinue the same quiet broadcast studio room tone across the boundary without a seam: a faint low air-conditioning hum and the close presence of the lapel mic on his voice, with a barely audible rustle of fabric as he shifts slightly. No audience, no applause.\\n\\nnon_diegetic_music:\\nA subtle, low-key television news broadcast underscore continues beneath his voice - a steady, understated instrumental bed with soft synth pads and a light corporate rhythmic pulse, mixed well below the dialogue, never swelling, never overpowering, never distracting from the spoken words.\",\n      \"length\": 226,\n      \"steps\": 20,\n      \"seed\": \"61203\"\n    },\n    {\n      \"id\": \"story_4\",\n      \"prompt\": \"subject_definitions:\\n<Subject 1> is the same real male television news anchor established by the incoming protected video prefix ending the previous segment - his identity, face, hands, wardrobe, framing, lighting, and color grading continue exactly as carried forward by that prefix, with no separate image or picture reference of any kind.\\n\\nsummary:\\nThe anchor reports on arrests made and the potential for further charges.\\n\\nretention_analysis:\\n<Subject 1> is carried forward unchanged from the incoming protected video prefix: face and hand skin texture with visible pores, natural creases, and a light key-light sheen on the forehead and nose bridge; deep brown eyes with fine natural iris texture and clear catchlights; natural ear shape; short dark hair with individual strand highlights from the rim light; the charcoal-navy wool suit with visible fabric weave, white cotton shirt collar, and deep burgundy tie with its dimple; the waist-up desk framing with both hands resting on the glass desk, all ten fingers individually separated and never merging or fusing together at any point along their length; the cool-blue city-skyline panel on the left and world-map video wall on the right; the three-point studio lighting and its catchlights; and the exact color grading, saturation, white balance, and exposure established in the incoming prefix, with zero drift and no orange or amber color cast on the skin.\\n\\ndetailed_description:\\nThe camera remains completely fixed on the exact same waist-up framing inherited from the incoming protected prefix - full desk, both hands visible - with absolutely no zoom, push, pull, pan, or movement of any kind. The exact color grading, saturation, white balance and exposure of the incoming protected prefix must be treated as the fixed reference for this entire segment, with zero color drift, zero saturation shift, and zero exposure change from that reference. The white balance stays neutral and true-to-life, with no orange, amber, or warm color cast on his skin. The world-map panel shows only a plain map with no text, no tickers, no headlines, and no lower-third graphics anywhere in the shot. The anchor continues speaking with brisk, confident, professional broadcast delivery, like a real news reporter live on air, at a natural reporting pace, with only brief natural pauses at sentence boundaries, never a long dead pause and never rushed: <d>[English]Several arrests have already been made, and sources close to the case tell us additional charges could be filed within days, possibly reaching well beyond the city.</d> When he speaks his teeth are clearly visible and well-defined, not blurred or indistinct. As he speaks his eyebrows lift subtly on emphasis, he blinks naturally about once every two to three seconds, his eyes make tiny involuntary darts, his head tilts a few degrees, his hands rest on the desk and occasionally shift naturally - a slight repositioning, a light finger tap, fingers briefly curling and resettling while always staying individually separated and never touching or merging into one another - rather than staying perfectly frozen, and his chest rises and falls with quiet breathing.\\n\\noverall_soundscape:\\nContinue the same quiet broadcast studio room tone across the boundary without a seam: a faint low air-conditioning hum and the close presence of the lapel mic on his voice, with a barely audible rustle of fabric as he shifts slightly. No audience, no applause.\\n\\nnon_diegetic_music:\\nA subtle, low-key television news broadcast underscore continues beneath his voice - a steady, understated instrumental bed with soft synth pads and a light corporate rhythmic pulse, mixed well below the dialogue, never swelling, never overpowering, never distracting from the spoken words.\",\n      \"length\": 243,\n      \"steps\": 20,\n      \"seed\": \"61304\"\n    },\n    {\n      \"id\": \"story_5\",\n      \"prompt\": \"subject_definitions:\\n<Subject 1> is the same real male television news anchor established by the incoming protected video prefix ending the previous segment - his identity, face, hands, wardrobe, framing, lighting, and color grading continue exactly as carried forward by that prefix, with no separate image or picture reference of any kind.\\n\\nsummary:\\nThe anchor shifts to the human impact of the story on victims.\\n\\nretention_analysis:\\n<Subject 1> is carried forward unchanged from the incoming protected video prefix: face and hand skin texture with visible pores, natural creases, and a light key-light sheen on the forehead and nose bridge; deep brown eyes with fine natural iris texture and clear catchlights; natural ear shape; short dark hair with individual strand highlights from the rim light; the charcoal-navy wool suit with visible fabric weave, white cotton shirt collar, and deep burgundy tie with its dimple; the waist-up desk framing with both hands resting on the glass desk, all ten fingers individually separated and never merging or fusing together at any point along their length; the cool-blue city-skyline panel on the left and world-map video wall on the right; the three-point studio lighting and its catchlights; and the exact color grading, saturation, white balance, and exposure established in the incoming prefix, with zero drift and no orange or amber color cast on the skin.\\n\\ndetailed_description:\\nThe camera remains completely fixed on the exact same waist-up framing inherited from the incoming protected prefix - full desk, both hands visible - with absolutely no zoom, push, pull, pan, or movement of any kind. The exact color grading, saturation, white balance and exposure of the incoming protected prefix must be treated as the fixed reference for this entire segment, with zero color drift, zero saturation shift, and zero exposure change from that reference. The white balance stays neutral and true-to-life, with no orange, amber, or warm color cast on his skin. The world-map panel shows only a plain map with no text, no tickers, no headlines, and no lower-third graphics anywhere in the shot. The anchor continues speaking with brisk, confident, professional broadcast delivery, like a real news reporter live on air, at a natural reporting pace, with only brief natural pauses at sentence boundaries, never a long dead pause and never rushed: <d>[English]For the victims, tonight brings a complicated mix of relief and anger. Many say they simply want straight answers, and they want their money back, as soon as possible.</d> When he speaks his teeth are clearly visible and well-defined, not blurred or indistinct. As he speaks his eyebrows lift subtly on emphasis, he blinks naturally about once every two to three seconds, his eyes make tiny involuntary darts, his head tilts a few degrees, his hands rest on the desk and occasionally shift naturally - a slight repositioning, a light finger tap, fingers briefly curling and resettling while always staying individually separated and never touching or merging into one another - rather than staying perfectly frozen, and his chest rises and falls with quiet breathing.\\n\\noverall_soundscape:\\nContinue the same quiet broadcast studio room tone across the boundary without a seam: a faint low air-conditioning hum and the close presence of the lapel mic on his voice, with a barely audible rustle of fabric as he shifts slightly. No audience, no applause.\\n\\nnon_diegetic_music:\\nA subtle, low-key television news broadcast underscore continues beneath his voice - a steady, understated instrumental bed with soft synth pads and a light corporate rhythmic pulse, mixed well below the dialogue, never swelling, never overpowering, never distracting from the spoken words.\",\n      \"length\": 260,\n      \"steps\": 20,\n      \"seed\": \"61405\"\n    },\n    {\n      \"id\": \"story_6\",\n      \"prompt\": \"subject_definitions:\\n<Subject 1> is the same real male television news anchor established by the incoming protected video prefix ending the previous segment - his identity, face, hands, wardrobe, framing, lighting, and color grading continue exactly as carried forward by that prefix, with no separate image or picture reference of any kind.\\n\\nsummary:\\nThe anchor delivers the sign-off, closing out the broadcast.\\n\\nretention_analysis:\\n<Subject 1> is carried forward unchanged from the incoming protected video prefix: face and hand skin texture with visible pores, natural creases, and a light key-light sheen on the forehead and nose bridge; deep brown eyes with fine natural iris texture and clear catchlights; natural ear shape; short dark hair with individual strand highlights from the rim light; the charcoal-navy wool suit with visible fabric weave, white cotton shirt collar, and deep burgundy tie with its dimple; the waist-up desk framing with both hands resting on the glass desk, all ten fingers individually separated and never merging or fusing together at any point along their length; the cool-blue city-skyline panel on the left and world-map video wall on the right; the three-point studio lighting and its catchlights; and the exact color grading, saturation, white balance, and exposure established in the incoming prefix, with zero drift and no orange or amber color cast on the skin.\\n\\ndetailed_description:\\nThe camera remains completely fixed on the exact same waist-up framing inherited from the incoming protected prefix - full desk, both hands visible - with absolutely no zoom, push, pull, pan, or movement of any kind. The exact color grading, saturation, white balance and exposure of the incoming protected prefix must be treated as the fixed reference for this entire segment, with zero color drift, zero saturation shift, and zero exposure change from that reference. The white balance stays neutral and true-to-life, with no orange, amber, or warm color cast on his skin. The world-map panel shows only a plain map with no text, no tickers, no headlines, and no lower-third graphics anywhere in the shot. The anchor continues speaking with brisk, confident, professional broadcast delivery, like a real news reporter live on air, at a natural reporting pace, with only brief natural pauses at sentence boundaries, never a long dead pause and never rushed: <d>[English]We will continue following this story as it develops. Thank you for spending part of your evening with us. I'm your anchor, and we'll see you right back here tomorrow.</d> When he speaks his teeth are clearly visible and well-defined, not blurred or indistinct. As he speaks his eyebrows lift subtly on emphasis, he blinks naturally about once every two to three seconds, his eyes make tiny involuntary darts, his head tilts a few degrees, his hands rest on the desk and occasionally shift naturally - a slight repositioning, a light finger tap, fingers briefly curling and resettling while always staying individually separated and never touching or merging into one another - rather than staying perfectly frozen, and his chest rises and falls with quiet breathing.\\n\\noverall_soundscape:\\nContinue the same quiet broadcast studio room tone across the boundary without a seam: a faint low air-conditioning hum and the close presence of the lapel mic on his voice, with a barely audible rustle of fabric as he shifts slightly. No audience, no applause.\\n\\nnon_diegetic_music:\\nA subtle, low-key television news broadcast underscore continues beneath his voice - a steady, understated instrumental bed with soft synth pads and a light corporate rhythmic pulse, mixed well below the dialogue, never swelling, never overpowering, never distracting from the spoken words.\",\n      \"length\": 260,\n      \"steps\": 20,\n      \"seed\": \"61506\"\n    }\n  ]\n}",
+      "run_name": "anchor_60s_prod_v2",
+      "segment_crf": 20,
+      "video_blend_frames": 39,
+      "width": 1280
+    }
+  },
+  "1701": {
+    "class_type": "MiniMaxH3ChainLoopStart",
+    "inputs": {
+      "external_context": [
+        "1951",
+        0
+      ],
+      "plan": [
+        "1949",
+        0
+      ],
+      "scene_range": "",
+      "start_clip": 1
+    },
+    "is_changed": [
+      NaN
+    ]
+  },
+  "1702": {
+    "class_type": "MiniMaxH3ChainCurrent",
+    "inputs": {
+      "align_audio_reference": false,
+      "state": [
+        "1701",
+        1
+      ]
+    }
+  },
+  "1703": {
+    "class_type": "MiniMaxH3ChainContext",
+    "inputs": {
+      "audio_vae": [
+        "4",
+        0
+      ],
+      "conditioning": [
+        "110",
+        0
+      ],
+      "latent": [
+        "110",
+        1
+      ],
+      "state": [
+        "1702",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "1704": {
+    "class_type": "MiniMaxH3ChainSegmentSave",
+    "inputs": {
+      "audio": [
+        "132",
+        1
+      ],
+      "images": [
+        "132",
+        0
+      ],
+      "images_with_overlap": [
+        "132",
+        2
+      ],
+      "sampled_latent": [
+        "124",
+        0
+      ],
+      "state": [
+        "1702",
+        0
+      ]
+    },
+    "is_changed": [
+      NaN
+    ]
+  },
+  "1705": {
+    "class_type": "MiniMaxH3ChainLoopEnd",
+    "inputs": {
+      "flow": [
+        "1701",
+        0
+      ],
+      "images": [
+        "132",
+        0
+      ],
+      "sampled_latent": [
+        "124",
+        0
+      ],
+      "segment": [
+        "1931",
+        0
+      ],
+      "state": [
+        "1702",
+        0
+      ]
+    }
+  },
+  "1706": {
+    "class_type": "MiniMaxH3ChainAssemble",
+    "inputs": {
+      "audio_bitrate": 256,
+      "audio_source": "plan",
+      "filename": "anchor_60s_prod_v2_%date:yyyy-MM-dd%",
+      "manifest": [
+        "1705",
+        0
+      ]
+    },
+    "is_changed": [
+      NaN
+    ]
+  },
+  "1930": {
+    "class_type": "MiniMaxH3ChainPlanStudio",
+    "inputs": {
+      "plan": [
+        "1700",
+        0
+      ],
+      "scene_range": "",
+      "start_clip": 1,
+      "tagged_references": [
+        "1947",
+        0
+      ],
+      "verify_resume_history": true
+    }
+  },
+  "1931": {
+    "class_type": "MiniMaxH3ChainReview",
+    "inputs": {
+      "assemble_partial_on_stop": true,
+      "audio": [
+        "132",
+        1
+      ],
+      "auto_continue_timeout_minutes": 0.0,
+      "enabled": false,
+      "partial_audio_source": "checkpointed",
+      "play_notification_sound": false,
+      "segment": [
+        "1704",
+        0
+      ],
+      "state": [
+        "1702",
+        0
+      ],
+      "unload_models_while_waiting": false
+    },
+    "is_changed": [
+      NaN
+    ]
+  },
+  "1941": {
+    "class_type": "ModelAttentionBackend",
+    "inputs": {
+      "attention": "comfy kitchen attention",
+      "model": [
+        "1",
+        0
+      ]
+    }
+  },
+  "1942": {
+    "class_type": "MiniMaxH3ChainRichScenePromptEditor",
+    "inputs": {
+      "plan": [
+        "1930",
+        0
+      ]
+    }
+  },
+  "1945": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "anchor_ref_v12.png"
+    },
+    "is_changed": [
+      "5631720f84f2d1ba43ef62c2ce8178fcd56312769fca54cd7560812ec045386a"
+    ]
+  },
+  "1947": {
+    "class_type": "MiniMaxH3TaggedPictureReference",
+    "inputs": {
+      "image": [
+        "1945",
+        0
+      ],
+      "tag": "anchor"
+    }
+  },
+  "1949": {
+    "class_type": "MiniMaxH3ChainRunManager",
+    "inputs": {
+      "archive_audio": true,
+      "archive_images": true,
+      "archive_video": false,
+      "asset_0": [
+        "1945",
+        0
+      ],
+      "asset_1": [
+        "1950",
+        0
+      ],
+      "asset_bindings_json": "[{\"binding_id\":\"crab-reference-image-cc0-v1\",\"label\":\"@crabs \\u2014 CC0 CONTINUITY IMAGE\",\"role\":\"picture\",\"node_id\":\"1945\",\"node_type\":\"LoadImage\",\"node_title\":\"@crabs \\u2014 CC0 CONTINUITY IMAGE\",\"output_slot\":0,\"output_type\":\"IMAGE\",\"widget_name\":\"image\",\"original_value\":\"soldier_crabs_reference_cc0.png\"},{\"binding_id\":\"crab-source-video-cc0-v1\",\"label\":\"CC0 SOLDIER CRABS SOURCE VIDEO\",\"role\":\"video\",\"node_id\":\"1950\",\"node_type\":\"VHS_LoadVideo\",\"node_title\":\"CC0 SOLDIER CRABS SOURCE VIDEO\",\"output_slot\":0,\"output_type\":\"IMAGE\",\"widget_name\":\"video\",\"original_value\":\"soldier_crabs_bribie_island_cc0.webm\"}]",
+      "plan": [
+        "1942",
+        0
+      ]
+    }
+  },
+  "1950": {
+    "class_type": "VHS_LoadVideo",
+    "inputs": {
+      "custom_height": 736,
+      "custom_width": 1280,
+      "force_rate": 24.0,
+      "format": "AnimateDiff",
+      "frame_load_cap": 0,
+      "select_every_nth": 1,
+      "skip_first_frames": 0,
+      "video": "h3_60s_seed_seg1_00001_.mp4"
+    },
+    "is_changed": [
+      "a0f6432813c958641fc8be1e406efb449bf2e719ca2def616acb7c7d6611f4d5"
+    ]
+  },
+  "1951": {
+    "class_type": "MiniMaxH3ChainExternalVideo",
+    "inputs": {
+      "plan": [
+        "1949",
+        0
+      ],
+      "prepend_original": true,
+      "source_audio": [
+        "1950",
+        2
+      ],
+      "source_fps": 24.0,
+      "source_frames": [
+        "1950",
+        0
+      ]
+    }
+  },
+  "1954": {
+    "class_type": "MiniMaxH3ChainPolicy",
+    "inputs": {
+      "final_audio": "generated",
+      "generated_continuity": "on",
+      "incoming_transition": "soft_av",
+      "lock_source_audio": false,
+      "source_reference": "off"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "device": "default",
+      "type": "minimax"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_audio_vae_fp32.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3SigmaShift",
+    "inputs": {
+      "model": [
+        "1635",
+        0
+      ],
+      "shift_audio": 3.0,
+      "shift_video": 12.0
+    }
+  }
+}

@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.bak*
+node_modules/
+web/dist/
+web/public/seed/media
+web/.impeccable/review
+web/.impeccable/mocks
+web/.impeccable/build
+*.tsbuildinfo
+.env
+.env.*
+!*.env.example
+*.key

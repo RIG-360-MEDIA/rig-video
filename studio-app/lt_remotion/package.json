@@ -1,0 +1,15 @@
+{
+  "name": "lt_remotion",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.518",
+    "@remotion/renderer": "^4.0.518",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.518"
+  }
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=RIG-Video clip checker + footage search model (Qwen3-VL 8B, llama.cpp), Tailscale only, port 11610
+After=network-online.target
+
+[Service]
+ExecStart=%h/vision/vision_serve.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

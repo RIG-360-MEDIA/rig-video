@@ -1,0 +1,11 @@
+[Unit]
+Description=RIG-Video VO clip checker vision model (Qwen3-VL 8B Q8, llama.cpp), Tailscale only, port 11620
+After=network-online.target
+
+[Service]
+ExecStart=%h/vo_check/vo_vision_serve.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

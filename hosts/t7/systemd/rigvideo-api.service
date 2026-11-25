@@ -1,0 +1,22 @@
+# RIG-Video API on trijya-7 (systemd --user). Install: cp to ~/.config/systemd/user/, then
+#   systemctl --user daemon-reload && systemctl --user enable --now rigvideo-api
+# ~/.config/rigvideo/api.env (mode 600) holds RIGVIDEO_WRITER_KEY, the script model's key on trijya-3.
+[Unit]
+Description=RIG-Video API (site + jobs), Tailscale only, port 8770
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/anchor-studio/rigvideo/server
+EnvironmentFile=%h/.config/rigvideo/api.env
+Environment=STUDIO_DATA=%h/anchor-studio/rigvideo-data
+Environment=PYTHONUNBUFFERED=1
+# script model first (trijya-3, llama.cpp), the footage org's Groq keys only if it is down
+Environment='LLM_PROVIDERS=[{"name":"t3","base_url":"http://100.99.155.88:8780/v1","key_env":"RIGVIDEO_WRITER_KEY","model":"writer","timeout":900},{"name":"groq","base_url":"https://api.groq.com/openai/v1","key_env":"GROQ_API_KEY","model":"openai/gpt-oss-120b","max_budget":7800}]'
+ExecStart=%h/anchor-studio/rigvideo-api-venv/bin/uvicorn app:app --host 100.72.225.89 --port 8770
+# jobs (renders, voices) are children: a deploy restart must not kill them
+KillMode=process
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

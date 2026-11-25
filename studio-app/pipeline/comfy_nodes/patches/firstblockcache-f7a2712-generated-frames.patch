@@ -1,0 +1,76 @@
+diff --git a/nodes.py b/nodes.py
+index f847633..638daab 100644
+--- a/nodes.py
++++ b/nodes.py
+@@ -25,12 +25,14 @@ class PresetConfig:
+     end_percent: float = 0.95
+     max_consecutive_hits: int = 2
+     temporal_guard: bool = False
++    scope: str = "all"          # "generated": decide on the median video frame + audio (chain overlap frames ignored)
+ 
+ 
+ PRESETS = {
+     "H3 Safe — 0.08 / max 2": PresetConfig(0.08),
+     "H3 Fast — 0.10 / max 2": PresetConfig(0.10),
+     "H3 Aggressive — 0.12 / max 2": PresetConfig(0.12),
++    "H3 Fast generated-frames — 0.10 / max 2": PresetConfig(0.10, scope="generated"),
+ }
+ 
+ CUSTOM_MODE = "Custom — manual values"
+@@ -119,6 +121,8 @@ class MiniMaxH3FirstBlockCache:
+         context.input_signature = signature
+         context.previous_sigma = sigma
+         context.video_slice, context.latent_frames = self._video_layout(minimax_payload)
++        layout = (minimax_payload or {}).get("layout")
++        context.layout_segments = list(layout.segments) if layout is not None else None
+         context.first_block_output = None
+         context.pending_first_residual = None
+         context.use_cache = False
+@@ -146,6 +150,35 @@ class MiniMaxH3FirstBlockCache:
+         denominator = previous_video.abs().mean(dim=(1, 2)).clamp(min=1e-8)
+         return float((numerator / denominator).max().item())
+ 
++    @staticmethod
++    def _generated_diff(current, previous, context, global_diff):
++        """Chain shots re-inject the overlap frames every step, which swamps the global mean. Decide on the
++        median video latent frame instead (a minority of reset frames cannot move the median), and require the
++        audio rows to be calm too. Logs the breakdown every step."""
++        layout = getattr(context, "layout_segments", None)
++        parts = {}
++        vid = None
++        if context.video_slice is not None and context.latent_frames:
++            a, b = context.video_slice
++            cv, pv = current[a:b], previous[a:b]
++            if cv.shape[0] % context.latent_frames == 0:
++                r = cv.shape[0] // context.latent_frames
++                num = (cv - pv).float().abs().reshape(context.latent_frames, r, -1).mean(dim=(1, 2))
++                den = pv.float().abs().reshape(context.latent_frames, r, -1).mean(dim=(1, 2)).clamp(min=1e-8)
++                per = (num / den)
++                vid = float(per.median().item())
++                parts["video_frames"] = [round(float(x), 3) for x in per.tolist()]
++        for start, stop, kind in (layout or []):
++            if kind == "audio":
++                parts["audio"] = float(((current[start:stop] - previous[start:stop]).float().abs().mean()
++                                        / previous[start:stop].float().abs().mean().clamp(min=1e-8)).item())
++        if vid is None:
++            return global_diff
++        d = max(vid, parts.get("audio", 0.0))
++        logging.info("FBC[generated] sigma %.3f global %.3f video-median %.3f audio %s frames %s", context.previous_sigma,
++                     global_diff, vid, "%.3f" % parts["audio"] if "audio" in parts else "-", parts.get("video_frames"))
++        return d
++
+     @torch.compiler.disable()
+     def decide(self, first_residual, first_output):
+         context = self.current
+@@ -161,8 +194,10 @@ class MiniMaxH3FirstBlockCache:
+             numerator = (first_residual - previous).abs().mean()
+             denominator = previous.abs().mean().clamp(min=1e-8)
+             diff = float((numerator / denominator).item())
+-            self.diff_values.append(diff)
+             decision_diff = diff
++            if self.config.scope == "generated":
++                decision_diff = self._generated_diff(first_residual, previous, context, diff)
++            self.diff_values.append(decision_diff)
+             if self.config.temporal_guard:
+                 temporal_diff = self._temporal_diff(first_residual, previous, context)
+                 if temporal_diff is not None:

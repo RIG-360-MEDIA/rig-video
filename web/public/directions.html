@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Anchor Studio: palettes</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #000; font-family: Archivo, system-ui, sans-serif; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .dir { position: relative; overflow: hidden; color: var(--ink); background: var(--g0); padding-bottom: 48px; border-bottom: 1px solid #000; isolation: isolate; }
+  /* the black is never flat: two glows of the palette's own colours, a vignette and fine grain */
+  .dir:before { content: ""; position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(60% 55% at 82% 18%, var(--glow1), transparent 70%), radial-gradient(45% 50% at 8% 92%, var(--glow2), transparent 70%), radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.45)); }
+  .dir:after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .rules { position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px); background-size: calc((100% - 80px)/12) 100%; background-position: 40px 0; }
+
+  .tag { display: flex; justify-content: space-between; gap: 30px; padding: 22px 40px 16px; }
+  .tag h2 { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+  .tag p { color: var(--muted); font-size: 13.5px; max-width: 76ch; margin-top: 4px; line-height: 1.45 }
+  .sw { display: flex; gap: 6px; align-items: flex-end }
+  .sw div { text-align: center; font-size: 10.5px; color: var(--muted) }
+  .sw span { display: block; height: 34px; border-radius: 3px; outline: 1px solid rgba(255,255,255,.12); margin-bottom: 5px }
+  .sw b { display: block; color: var(--ink); font-weight: 600 }
+
+  .bar { display: flex; align-items: center; gap: 18px; height: 40px; padding: 0 40px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 12px; background: color-mix(in srgb, var(--g0) 70%, transparent); }
+  .brand { font-weight: 800; display: flex; align-items: center; gap: 8px; font-size: 14px; margin-right: 8px }
+  .dnl { background: #e5484d; color: #fff; font-weight: 900; font-size: 11px; padding: 2px 5px; border-radius: 2px }
+  .live { background: var(--acc); color: var(--acc-on); font-weight: 800; font-size: 11px; padding: 3px 7px; border-radius: 2px; letter-spacing: .06em; display: flex; align-items: center; gap: 6px }
+  .live:before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.2s infinite }
+  @keyframes blink { 50% { opacity: .2 } }
+  .clock { color: var(--muted) } .clock b { color: var(--work); font-weight: 600 }
+
+  .hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; padding: 44px 40px 30px; min-height: 470px }
+  .h1 { font-size: 88px; line-height: .86; font-weight: 850; text-transform: uppercase; font-stretch: 66%; letter-spacing: -.01em }
+  .h1 em { font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; text-transform: none; font-stretch: 100%; color: var(--work) }
+  .sub { margin-top: 18px; color: var(--muted); font-size: 16px; line-height: 1.5; max-width: 42ch }
+  .prompt { margin-top: 24px; border: 1px solid var(--work-line); background: var(--work-soft); border-radius: 8px; padding: 14px; backdrop-filter: blur(6px) }
+  .prompt .ph { color: var(--muted); font-size: 15px }
+  .prompt .row { display: flex; align-items: center; gap: 8px; margin-top: 14px }
+  .chip { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px }
+  .faces { display: flex; margin-left: auto }
+  .faces img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 2px solid var(--g0); margin-left: -7px }
+  .faces img:first-child { outline: 2px solid var(--work) }
+  .go { background: var(--acc); color: var(--acc-on); font-weight: 750; font-size: 14px; border-radius: 5px; padding: 9px 14px; margin-left: 8px; white-space: nowrap }
+
+  /* hero collage: the four steps as real pieces of the product */
+  .collage { position: relative }
+  .pc { position: absolute; border-radius: 8px; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,.7), 0 0 0 1px var(--line) }
+  .paper { background: var(--paper); color: var(--paper-ink); padding: 16px 18px; width: 300px; left: 0; top: 10px; transform: rotate(-2.5deg) }
+  .paper .who { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .65; display: flex; justify-content: space-between }
+  .paper p { font-size: 14.5px; line-height: 1.55; margin-top: 6px }
+  .paper .lt { margin-top: 12px; display: flex; font-size: 11px; font-weight: 800; text-transform: uppercase }
+  .paper .lt span:first-child { background: #e5484d; color: #fff; padding: 3px 6px } .paper .lt span:last-child { background: #111; color: #fff; padding: 3px 7px }
+  .face { width: 170px; right: 10px; top: 0; transform: rotate(3deg); background: var(--card); z-index: 2 }
+  .face img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block }
+  .face div { padding: 8px 10px; font-size: 12px; font-weight: 700 } .face small { display: block; color: var(--muted); font-weight: 400 }
+  .frames { left: 60px; top: 205px; width: 380px; z-index: 1; padding: 10px; background: #050505; transform: rotate(-1deg) }
+  .frames .g { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+  .frames img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: 2px }
+  .frames .pick { position: relative } .frames .pick:after { content: "1"; position: absolute; right: -4px; top: -14px; font: 28px "Caveat Brush", cursive; color: var(--acc); }
+  .frames .pick img { outline: 2px solid var(--acc); outline-offset: 2px }
+  .frames .cap { font-size: 10px; color: var(--work); margin-top: 7px; letter-spacing: .06em }
+  .render { right: 30px; top: 300px; z-index: 3; width: 210px; background: var(--panel); color: var(--panel-ink); padding: 14px; transform: rotate(2deg) }
+  .render h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; opacity: .75 }
+  .render .r { display: flex; gap: 10px; align-items: center; margin-top: 10px }
+  .ring { width: 46px; height: 46px; border-radius: 50%; position: relative; background: conic-gradient(var(--ring) 62%, var(--ring-bg) 0) }
+  .ring:after { content: "62%"; position: absolute; inset: 4px; border-radius: 50%; background: var(--panel); display: grid; place-items: center; font-size: 11px; font-weight: 700 }
+  .render .eta { font-size: 28px; font-weight: 850; font-stretch: 70%; line-height: 1 } .render small { font-size: 11px; opacity: .75 }
+
+  /* what comes out: the finished video gets its own band */
+  .out { display: grid; grid-template-columns: 1.35fr 1fr; gap: 40px; padding: 26px 40px; margin: 0 40px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); align-items: center }
+  .out video { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; display: block; box-shadow: 0 0 0 1px var(--line), 0 30px 80px -30px var(--glow1s) }
+  .out h3 { font-size: 34px; font-weight: 850; text-transform: uppercase; font-stretch: 70%; line-height: .95 }
+  .out p { color: var(--muted); margin-top: 12px; font-size: 14.5px; line-height: 1.5 }
+  .out ul { list-style: none; padding: 0; margin-top: 16px; display: grid; gap: 8px; font-size: 13px }
+  .out li { display: flex; gap: 10px; align-items: baseline } .out li b { color: var(--work); font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 12px; width: 26px }
+
+  .app { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 28px 40px 0 }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden }
+  .card .img { aspect-ratio: 16/7; position: relative } .card .img img { width: 100%; height: 100%; object-fit: cover; display: block }
+  .stage { position: absolute; left: 10px; top: 10px; font-size: 10.5px; font-weight: 750; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .06em; background: var(--work); color: var(--work-on) }
+  .card .b { padding: 12px 14px 14px } .card .t { font-weight: 700; font-size: 14px; line-height: 1.3 }
+  .card .m { font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; justify-content: space-between } .card .m .mono { color: var(--num) }
+  .seg { display: flex; gap: 3px; margin-top: 11px } .seg span { flex: 1; height: 4px; border-radius: 2px; background: var(--line) }
+  .seg .d { background: var(--work) } .seg .n { background: linear-gradient(90deg, var(--work) 55%, var(--line) 55%) }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&display=swap" rel="stylesheet" />
+</head>
+<body>
+<template id="t">
+<section class="dir" style="__V__">
+  <div class="rules"></div>
+  <div class="tag"><div><h2>__N__</h2><p>__D__</p></div><div class="sw">__SW__</div></div>
+  <div class="bar"><span class="brand"><span class="dnl">DNL</span>Anchor Studio</span><span class="live">ON AIR</span>
+    <span class="clock mono">DELHI <b>21:42</b></span><span class="clock mono">KYIV <b>18:12</b></span><span class="clock mono">MOSCOW <b>19:12</b></span><span class="clock mono">LONDON <b>16:12</b></span><span class="clock mono">NEW YORK <b>11:12</b></span>
+    <span class="clock mono" style="margin-left:auto">QUEUE <b>2</b> · NEXT READY <b>22:05 IST</b></span></div>
+  <div class="hero">
+    <div>
+      <div class="h1">From story<br>to <em>anchored</em><br>news</div>
+      <p class="sub">Paste a link, drop a PDF or write it. Choose the anchor and the pictures. The studio voices and renders the rest.</p>
+      <div class="prompt"><div class="ph">Paste a link, drop a PDF, or start writing the story…</div>
+        <div class="row"><span class="chip">1:00</span><span class="chip">Anchor + VO</span>
+          <span class="faces"><img src="/seed/media/anchors/maren_ashcroft_face.jpg"><img src="/seed/media/anchors/desmond_okafor_face.jpg"><img src="/seed/media/anchors/emre_yildiz_face.jpg"></span><span class="go">Write the script</span></div></div>
+    </div>
+    <div class="collage">
+      <div class="pc paper"><div class="who"><span>Anchor 1</span><span>0:22</span></div><p>Russia says its air defences destroyed six hundred and sixteen Ukrainian drones overnight, grounding flights in the capital.</p><div class="lt"><span>Russia</span><span>616 drones downed overnight</span></div></div>
+      <div class="pc face"><img src="/seed/media/anchors/maren_ashcroft_face.jpg"><div>Maren Ashcroft<small>2.71 words a second</small></div></div>
+      <div class="pc frames"><div class="g"><img src="/seed/media/clips/mos_v3_v3_1.jpg"><div class="pick"><img src="/seed/media/clips/mos_v3_v3_2.jpg"></div><img src="/seed/media/clips/d616_v1_v1_3.jpg"><img src="/seed/media/clips/mos_a1_a1_1.jpg"><img src="/seed/media/clips/d616_a1_a1_4.jpg"><img src="/seed/media/clips/d616_v2_v2_1.jpg"></div><div class="cap mono">ROLL 02 · 6 FRAMES · 1 PICKED · 0:09 OF 0:12</div></div>
+      <div class="pc render"><h4>Render machine</h4><div class="r"><div class="ring"></div><div><div class="eta">22:05</div><small>ready at, IST</small></div></div></div>
+    </div>
+  </div>
+  <div class="out">
+    <video src="/seed/media/library/inject_1.mp4" autoplay muted loop playsinline></video>
+    <div><h3>What comes out</h3><p>A finished anchored report: the anchor on camera, your footage between, the lower third and ticker in DNL's own on-air style.</p>
+      <ul><li><b>01</b>Written from the source, every fact editable</li><li><b>02</b>Footage picked by you, treated to fit</li><li><b>03</b>Voice you listened to before the render</li></ul></div>
+  </div>
+  <div class="app">
+    <div class="card"><div class="img"><img src="/seed/media/clips/mos_v3_v3_1.jpg"><span class="stage">Visuals</span></div><div class="b"><div class="t">The night the sky over Moscow turned into a frontline</div><div class="m"><span>Maren Ashcroft</span><span class="mono">1:30</span></div><div class="seg"><span class="d"></span><span class="n"></span><span></span><span></span></div></div></div>
+    <div class="card"><div class="img"><img src="/seed/media/library/sge2.jpg"><span class="stage">Review</span></div><div class="b"><div class="t">Drone debris strikes apartment building in Lipetsk</div><div class="m"><span>Maren Ashcroft</span><span class="mono">0:58</span></div><div class="seg"><span class="d"></span><span class="d"></span><span class="n"></span><span></span></div></div></div>
+    <div class="card"><div class="img"><img src="/seed/media/library/inject_2.jpg"><span class="stage">Script</span></div><div class="b"><div class="t">Far-right groups attack marchers in three French cities</div><div class="m"><span>Eleanor Marsh</span><span class="mono">1:00</span></div><div class="seg"><span class="n"></span><span></span><span></span><span></span></div></div></div>
+  </div>
+</section>
+</template>
+<script>
+// ground (70) · working colour (20) · accent (10). Every ground is a tinted black, lifted by glows of its own colours.
+const P = [
+ ["1 · Ink black + ice blue + coral", "A blue-black like a newsroom at 3 a.m. Ice blue does the work (rules, progress, numbers); coral is the one hot mark for action and live.",
+   { g0:"#0a0e16", card:"#101624", line:"#1d2638", ink:"#eaf0f8", muted:"#8592a8", work:"#8fd3ff", workOn:"#06121f", acc:"#ff6a4d", accOn:"#fff", paper:"#e9f3fb", paperInk:"#0b1424", panel:"#13233d", panelInk:"#dcecff", ring:"#ff6a4d", ringBg:"#22385c", glow1:"rgba(143,211,255,.13)", glow2:"rgba(255,106,77,.08)" }],
+ ["2 · Espresso black + brass + teal", "A warm brown-black with brass as the working colour and a cool teal accent. Feels premium and broadcast-heritage; teal pops hard against the warm ground.",
+   { g0:"#120e0b", card:"#1b1511", line:"#2e251d", ink:"#f4ece2", muted:"#a3968a", work:"#d8a54a", workOn:"#1a1206", acc:"#2ec4b6", accOn:"#04201d", paper:"#f1e6d2", paperInk:"#1a1206", panel:"#2a2016", panelInk:"#f4e3c3", ring:"#2ec4b6", ringBg:"#3d2f20", glow1:"rgba(216,165,74,.14)", glow2:"rgba(46,196,182,.07)" }],
+ ["3 · Forest black + mint + magenta", "A deep green-black with mint as the working colour and magenta as the accent. Fresh and unexpected, very visible, nothing like other AI tools.",
+   { g0:"#08110d", card:"#0e1a15", line:"#1a2b23", ink:"#e8f5ee", muted:"#83a094", work:"#7ef0c2", workOn:"#032015", acc:"#ff4fa3", accOn:"#fff", paper:"#e5f7ee", paperInk:"#062016", panel:"#0f2c22", panelInk:"#d6fbe9", ring:"#ff4fa3", ringBg:"#1d4033", glow1:"rgba(126,240,194,.12)", glow2:"rgba(255,79,163,.08)" }],
+ ["4 · Aubergine black + lilac + acid lime", "A purple-black with lilac doing the work and acid lime for action. Cinematic night feel, high energy; lime is the brightest call-to-action of all ten.",
+   { g0:"#110b16", card:"#1a1222", line:"#2b2036", ink:"#f1ecf8", muted:"#9b8faf", work:"#b9a3ff", workOn:"#160d2e", acc:"#d4ff3a", accOn:"#141a00", paper:"#efe9ff", paperInk:"#170f2b", panel:"#251a3d", panelInk:"#ebe3ff", ring:"#d4ff3a", ringBg:"#3a2c58", glow1:"rgba(185,163,255,.15)", glow2:"rgba(212,255,58,.06)" }],
+ ["5 · Petrol black + sea teal + amber", "A blue-green black like a control room after hours. Sea teal works, amber marks action and live, and our amber numbers belong here naturally.",
+   { g0:"#081114", card:"#0e1a1e", line:"#19292e", ink:"#e6f2f3", muted:"#82999d", work:"#2fc1b4", workOn:"#032220", acc:"#ffb020", accOn:"#1e1300", paper:"#e3f3f1", paperInk:"#05201d", panel:"#0b2e2c", panelInk:"#d5f7f2", ring:"#ffb020", ringBg:"#174240", glow1:"rgba(47,193,180,.13)", glow2:"rgba(255,176,32,.07)" }],
+ ["6 · Warm charcoal + bone + vermilion", "A soft warm charcoal (not pure black) with bone as the working colour and vermilion action. The most editorial; paper cards make Script and Review feel like a run-down.",
+   { g0:"#141312", card:"#1c1b19", line:"#2d2b28", ink:"#f1ede6", muted:"#9c968c", work:"#ece4d4", workOn:"#1a1611", acc:"#ff4b2b", accOn:"#fff", paper:"#ece4d4", paperInk:"#1a1611", panel:"#ece4d4", panelInk:"#1a1611", ring:"#ff4b2b", ringBg:"#d4c9b4", glow1:"rgba(236,228,212,.07)", glow2:"rgba(255,75,43,.07)" }],
+ ["7 · Oxblood black + rose + gold", "A red-black with dusty rose working and gold for action. Rich and warm, keeps a red soul without the black-and-red look.",
+   { g0:"#150a0d", card:"#1f1015", line:"#341c23", ink:"#f7e9ec", muted:"#b096a0", work:"#f0a7b6", workOn:"#2a0c14", acc:"#e8b04b", accOn:"#1f1300", paper:"#f8e5e8", paperInk:"#2a0c14", panel:"#2f141c", panelInk:"#fde1e6", ring:"#e8b04b", ringBg:"#4a2430", glow1:"rgba(240,167,182,.12)", glow2:"rgba(232,176,75,.07)" }],
+ ["8 · Graphite blue + cobalt + tangerine", "A cool graphite with a hint of blue; cobalt works and tangerine is the action. Confident and clean, the most 'tool-like' of the set.",
+   { g0:"#0d1016", card:"#141823", line:"#232a38", ink:"#eceff5", muted:"#8b92a3", work:"#5b82ff", workOn:"#fff", acc:"#ff8a1f", accOn:"#1d0d00", paper:"#eaf0ff", paperInk:"#0c1530", panel:"#1a2c6e", panelInk:"#e4ebff", ring:"#ff8a1f", ringBg:"#2a3f8f", glow1:"rgba(91,130,255,.14)", glow2:"rgba(255,138,31,.07)" }],
+ ["9 · Titanium black + chrome + signal red", "A neutral smoke-black with silver chrome as the working colour and a pure signal red. Monochrome luxury; red stays rare and sharp.",
+   { g0:"#111214", card:"#18191c", line:"#2a2c31", ink:"#f2f3f5", muted:"#9095a0", work:"#cfd4dc", workOn:"#111214", acc:"#ff3b3b", accOn:"#fff", paper:"#e8ebef", paperInk:"#121316", panel:"#24262b", panelInk:"#eef0f3", ring:"#ff3b3b", ringBg:"#3a3d44", glow1:"rgba(207,212,220,.08)", glow2:"rgba(255,59,59,.06)" }],
+ ["10 · Night-teal black + sand + red-orange", "A very dark teal-black with warm sand working and a red-orange accent. Desert-at-night contrast: cool ground, warm marks.",
+   { g0:"#061312", card:"#0c1d1b", line:"#16302d", ink:"#eef4f2", muted:"#88a29d", work:"#e7d3a8", workOn:"#1d1606", acc:"#ff5a33", accOn:"#fff", paper:"#efe2c6", paperInk:"#1d1606", panel:"#0f2b28", panelInk:"#f3e6c8", ring:"#ff5a33", ringBg:"#1f4440", glow1:"rgba(231,211,168,.09)", glow2:"rgba(255,90,51,.07)" }],
+];
+const t = document.getElementById("t").innerHTML;
+document.body.insertAdjacentHTML("beforeend", P.map(([n, d, c]) => {
+  const v = `--g0:${c.g0};--card:${c.card};--line:${c.line};--ink:${c.ink};--muted:${c.muted};--work:${c.work};--work-on:${c.workOn};--acc:${c.acc};--acc-on:${c.accOn};--paper:${c.paper};--paper-ink:${c.paperInk};--panel:${c.panel};--panel-ink:${c.panelInk};--ring:${c.ring};--ring-bg:${c.ringBg};--glow1:${c.glow1};--glow2:${c.glow2};--glow1s:${c.glow1.replace(/[\d.]+\)$/, ".5)")};--num:${c.work};--rule:color-mix(in srgb, ${c.work} 6%, transparent);--work-soft:color-mix(in srgb, ${c.work} 7%, transparent);--work-line:color-mix(in srgb, ${c.work} 35%, transparent)`;
+  const sw = [[c.g0, "70", "ground"], [c.work, "20", "working"], [c.acc, "10", "accent"]].map(([col, p, l]) => `<div><span style="background:${col};width:${p * 1.3}px"></span><b>${p}%</b>${l}<br><span class="mono" style="all:unset;font-family:JetBrains Mono;font-size:10px">${col}</span></div>`).join("");
+  return t.replace("__V__", v).replace("__N__", n).replace("__D__", d).replace("__SW__", sw);
+}).join(""));
+</script>
+</body>
+</html>

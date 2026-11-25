@@ -1,0 +1,15 @@
+# GitHub Actions self-hosted runner for RIG-360-MEDIA/rig-video (labels: self-hosted, rig-video), systemd --user on trijya-7.
+# Runs CI on every push/PR and installs published releases (deploy/deploy.sh). Starts on boot (linger is on).
+# Install: docs/HANDOFF.md, "CI/CD runner".
+[Unit]
+Description=GitHub Actions runner for RIG-360-MEDIA/rig-video
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/actions-runner
+ExecStart=%h/actions-runner/run.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

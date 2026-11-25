@@ -1,0 +1,640 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T11:25:32+00:00",
+  "title": "Design System: Anchor Studio by DNL",
+  "extensions": {
+    "colorMeta": {
+      "g0": {
+        "role": "neutral",
+        "displayName": "Rebate Black",
+        "canonical": "#0a0b0d",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g1": {
+        "role": "neutral",
+        "displayName": "Graphite 1",
+        "canonical": "#0f1115",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g2": {
+        "role": "neutral",
+        "displayName": "Graphite 2",
+        "canonical": "#14171c",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g3": {
+        "role": "neutral",
+        "displayName": "Graphite 3",
+        "canonical": "#1a1e24",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g4": {
+        "role": "neutral",
+        "displayName": "Graphite 4",
+        "canonical": "#22272f",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g5": {
+        "role": "neutral",
+        "displayName": "Graphite 5",
+        "canonical": "#2c323b",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g6": {
+        "role": "neutral",
+        "displayName": "Graphite 6",
+        "canonical": "#3b424d",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g7": {
+        "role": "neutral",
+        "displayName": "Graphite 7",
+        "canonical": "#58606c",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g8": {
+        "role": "neutral",
+        "displayName": "Graphite 8",
+        "canonical": "#848c98",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g9": {
+        "role": "neutral",
+        "displayName": "Graphite 9",
+        "canonical": "#b3b9c2",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "g10": {
+        "role": "neutral",
+        "displayName": "Graphite 10",
+        "canonical": "#e8eaee",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet Black",
+        "canonical": "#060607",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#14171c",
+          "#22272f",
+          "#2c323b",
+          "#3b424d",
+          "#58606c",
+          "#848c98",
+          "#e8eaee"
+        ]
+      },
+      "marker": {
+        "role": "primary",
+        "displayName": "China-Marker Red",
+        "canonical": "#e31b23",
+        "tonalRamp": [
+          "oklch(15% 0.082 27)",
+          "oklch(26% 0.119 27)",
+          "oklch(38% 0.156 27)",
+          "oklch(49% 0.192 27)",
+          "oklch(61% 0.225 27)",
+          "oklch(72% 0.188 27)",
+          "oklch(84% 0.151 27)",
+          "oklch(95% 0.114 27)"
+        ]
+      },
+      "marker-hover": {
+        "role": "primary",
+        "displayName": "China-Marker Red, hover",
+        "canonical": "#f0262e",
+        "tonalRamp": [
+          "oklch(15% 0.084 26)",
+          "oklch(26% 0.122 26)",
+          "oklch(38% 0.159 26)",
+          "oklch(49% 0.197 26)",
+          "oklch(61% 0.229 26)",
+          "oklch(72% 0.192 26)",
+          "oklch(84% 0.154 26)",
+          "oklch(95% 0.117 26)"
+        ]
+      },
+      "marker-press": {
+        "role": "primary",
+        "displayName": "China-Marker Red, pressed",
+        "canonical": "#c8141b",
+        "tonalRamp": [
+          "oklch(15% 0.075 27)",
+          "oklch(26% 0.109 27)",
+          "oklch(38% 0.142 27)",
+          "oklch(49% 0.176 27)",
+          "oklch(61% 0.205 27)",
+          "oklch(72% 0.172 27)",
+          "oklch(84% 0.138 27)",
+          "oklch(95% 0.105 27)"
+        ]
+      },
+      "marker-ink": {
+        "role": "primary",
+        "displayName": "Marker Ink",
+        "canonical": "#ff5b61",
+        "tonalRamp": [
+          "oklch(15% 0.072 22)",
+          "oklch(26% 0.104 22)",
+          "oklch(38% 0.137 22)",
+          "oklch(49% 0.169 22)",
+          "oklch(61% 0.197 22)",
+          "oklch(72% 0.165 22)",
+          "oklch(84% 0.133 22)",
+          "oklch(95% 0.100 22)"
+        ]
+      },
+      "edge": {
+        "role": "secondary",
+        "displayName": "Edge-Print Amber",
+        "canonical": "#df9a4c",
+        "tonalRamp": [
+          "oklch(15% 0.045 67)",
+          "oklch(26% 0.066 67)",
+          "oklch(38% 0.086 67)",
+          "oklch(49% 0.106 67)",
+          "oklch(61% 0.124 67)",
+          "oklch(72% 0.103 67)",
+          "oklch(84% 0.083 67)",
+          "oklch(95% 0.063 67)"
+        ]
+      },
+      "anchor": {
+        "role": "tertiary",
+        "displayName": "Anchor Violet",
+        "canonical": "#ab9cff",
+        "tonalRamp": [
+          "oklch(15% 0.051 289)",
+          "oklch(26% 0.074 289)",
+          "oklch(38% 0.097 289)",
+          "oklch(49% 0.119 289)",
+          "oklch(61% 0.139 289)",
+          "oklch(72% 0.116 289)",
+          "oklch(84% 0.094 289)",
+          "oklch(95% 0.071 289)"
+        ]
+      },
+      "vo": {
+        "role": "tertiary",
+        "displayName": "Voiceover Blue",
+        "canonical": "#5fb3ea",
+        "tonalRamp": [
+          "oklch(15% 0.041 240)",
+          "oklch(26% 0.060 240)",
+          "oklch(38% 0.078 240)",
+          "oklch(49% 0.097 240)",
+          "oklch(61% 0.113 240)",
+          "oklch(72% 0.095 240)",
+          "oklch(84% 0.076 240)",
+          "oklch(95% 0.058 240)"
+        ]
+      },
+      "ok": {
+        "role": "state",
+        "displayName": "Filled",
+        "canonical": "#4dc48c",
+        "tonalRamp": [
+          "oklch(15% 0.049 160)",
+          "oklch(26% 0.071 160)",
+          "oklch(38% 0.093 160)",
+          "oklch(49% 0.115 160)",
+          "oklch(61% 0.134 160)",
+          "oklch(72% 0.112 160)",
+          "oklch(84% 0.090 160)",
+          "oklch(95% 0.068 160)"
+        ]
+      },
+      "warn": {
+        "role": "state",
+        "displayName": "Short",
+        "canonical": "#f2c14e",
+        "tonalRamp": [
+          "oklch(15% 0.051 85)",
+          "oklch(26% 0.074 85)",
+          "oklch(38% 0.097 85)",
+          "oklch(49% 0.120 85)",
+          "oklch(61% 0.140 85)",
+          "oklch(72% 0.117 85)",
+          "oklch(84% 0.094 85)",
+          "oklch(95% 0.071 85)"
+        ]
+      },
+      "bad": {
+        "role": "state",
+        "displayName": "Error",
+        "canonical": "#ff5b61",
+        "tonalRamp": [
+          "oklch(15% 0.072 22)",
+          "oklch(26% 0.104 22)",
+          "oklch(38% 0.137 22)",
+          "oklch(49% 0.169 22)",
+          "oklch(61% 0.197 22)",
+          "oklch(72% 0.165 22)",
+          "oklch(84% 0.133 22)",
+          "oklch(95% 0.100 22)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing only, width 92. Hero 44 / 56 (sm) / 64 (lg) px; closing heading 40 / 52 (sm) px; section heads 34 / 40 (sm) px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles at 26 px; Sign in heading at 28 px."
+      },
+      "subhead": {
+        "displayName": "Subhead",
+        "purpose": "19 px: Visuals part title, anchor name in the Anchors detail; Script total runtime at this size in edge print."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "17 px section headings inside a page (Today's picks, Listen to each part); landing hero lede."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "16 px landing section body, 60 ch max."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Dialog, sheet, panel and empty-state titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text, 14 px / 1.45."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "Rows, captions, meta; 12 px floor for running text."
+      },
+      "label-narrow": {
+        "displayName": "Narrow label",
+        "purpose": "Step track, segmented controls, tabs, rail titles (font-stretch 84%)."
+      },
+      "edge-print": {
+        "displayName": "Edge print",
+        "purpose": "Every measurement: codes, times, counts, ring percentages, frame durations. Always amber, tabular."
+      },
+      "tag": {
+        "displayName": "Tag",
+        "purpose": "Uppercase mono chips for kinds, states and news categories."
+      },
+      "marker-numeral": {
+        "displayName": "Marker numeral",
+        "purpose": "Play-order numerals on picked frames (42 px) and in the picked list (17 px). Bare red with a 6 px g0 stroke; never in a disc."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tooltip",
+        "value": "0 8px 24px -8px rgba(0,0,0,0.8)",
+        "purpose": "Tooltips."
+      },
+      {
+        "name": "float",
+        "value": "0 16px 40px -12px rgba(0,0,0,0.9)",
+        "purpose": "Menus and toasts."
+      },
+      {
+        "name": "dialog",
+        "value": "0 30px 80px -20px rgba(0,0,0,0.9)",
+        "purpose": "Centred dialogs over a 70% black, 3 px blur backdrop."
+      },
+      {
+        "name": "sheet",
+        "value": "-30px 0 60px -20px rgba(0,0,0,0.8)",
+        "purpose": "Right-edge sheet over a 50% black backdrop."
+      },
+      {
+        "name": "primary-press",
+        "value": "0 1px 0 rgba(255,255,255,0.12) inset, 0 6px 16px -8px rgba(0,0,0,0.8)",
+        "purpose": "Primary button only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The system easing: marker loop, dialogs, sheets, menus, toasts, page changes, rings and fill bars."
+      },
+      {
+        "name": "ease-out-quart",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Declared alternative; expo is the default."
+      },
+      {
+        "name": "hover",
+        "value": "150ms ease-out",
+        "purpose": "Colour, border and press transitions on controls."
+      },
+      {
+        "name": "marker-loop",
+        "value": "220ms ease-out-expo",
+        "purpose": "The loop draws in 220 ms; the numeral follows after 160 ms. No spring."
+      },
+      {
+        "name": "dialog",
+        "value": "240ms ease-out-expo",
+        "purpose": "Dialog scale-in from 97%."
+      },
+      {
+        "name": "page",
+        "value": "300ms ease-out-expo",
+        "purpose": "Step change: fade and 10 px slide."
+      },
+      {
+        "name": "sheet",
+        "value": "320ms ease-out-expo",
+        "purpose": "Sheet slide-in from the right."
+      },
+      {
+        "name": "indicator",
+        "value": "spring, 320-350ms, bounce 0.1-0.12",
+        "purpose": "Only the sliding selection indicators of nav, step track and segmented controls."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "prefers-reduced-motion collapses all animation and transition durations."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "2xl",
+        "value": "1536px"
+      },
+      {
+        "name": "max",
+        "value": "1680px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one forward move per view (Write the script, Continue, Render).",
+      "html": "<button class=\"ds-btn-primary\">Write the script</button>",
+      "css": ".ds-btn-primary { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px; border:0; border-radius:var(--radius-sm,3px); background:var(--color-marker,#e31b23); color:#fff; font-size:13.5px; font-weight:600; box-shadow:0 1px 0 rgba(255,255,255,0.12) inset, 0 6px 16px -8px rgba(0,0,0,0.8); transition:background 150ms ease-out, transform 150ms ease-out; cursor:pointer; } .ds-btn-primary:hover { background:#f0262e; } .ds-btn-primary:active { background:#c8141b; transform:translateY(1px); } .ds-btn-primary:focus-visible { outline:2px solid var(--color-marker,#e31b23); outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The default button.",
+      "html": "<button class=\"ds-btn-secondary\">Use this story</button>",
+      "css": ".ds-btn-secondary { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; height:36px; padding:0 14px; border:1px solid var(--color-g5,#2c323b); border-radius:var(--radius-sm,3px); background:var(--color-g3,#1a1e24); color:var(--color-g10,#e8eaee); font-size:13.5px; font-weight:600; transition:background 150ms ease-out, border-color 150ms ease-out; cursor:pointer; } .ds-btn-secondary:hover { background:var(--color-g4,#22272f); border-color:var(--color-g6,#3b424d); } .ds-btn-secondary:active { transform:translateY(1px); } .ds-btn-secondary:focus-visible { outline:2px solid var(--color-marker,#e31b23); outline-offset:2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-weight actions beside a primary or secondary.",
+      "html": "<button class=\"ds-btn-ghost\">Hide</button>",
+      "css": ".ds-btn-ghost { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; height:36px; padding:0 14px; border:0; border-radius:var(--radius-sm,3px); background:transparent; color:var(--color-g9,#b3b9c2); font-size:13.5px; font-weight:600; transition:background 150ms ease-out, color 150ms ease-out; cursor:pointer; } .ds-btn-ghost:hover { background:var(--color-g3,#1a1e24); color:var(--color-g10,#e8eaee); } .ds-btn-ghost:focus-visible { outline:2px solid var(--color-marker,#e31b23); outline-offset:2px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field; focus steps the border to g8, no glow.",
+      "html": "<input class=\"ds-input\" placeholder=\"Paste a link or write the story\" />",
+      "css": ".ds-input { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; height:36px; width:280px; padding:0 12px; border:1px solid var(--color-g5,#2c323b); border-radius:var(--radius-sm,3px); background:var(--color-g1,#0f1115); color:var(--color-g10,#e8eaee); font-size:14px; caret-color:var(--color-marker,#e31b23); transition:border-color 150ms ease-out; } .ds-input::placeholder { color:var(--color-g7,#58606c); } .ds-input:hover { border-color:var(--color-g6,#3b424d); } .ds-input:focus { outline:none; border-color:var(--color-g8,#848c98); }"
+    },
+    {
+      "name": "Step Track",
+      "kind": "nav",
+      "description": "Condensed step navigation inside a well; the current step is a light fill.",
+      "html": "<nav class=\"ds-steps\"><span class=\"ds-step\"><i>1</i>Script <b>&#10003;</b></span><span class=\"ds-step ds-on\"><i>2</i>Visuals</span><span class=\"ds-step ds-off\"><i>3</i>Review</span><span class=\"ds-step ds-off\"><i>4</i>Render</span></nav>",
+      "css": ".ds-steps { display:inline-flex; padding:2px; border:1px solid var(--color-g4,#22272f); border-radius:var(--radius-sm,3px); background:var(--color-g1,#0f1115); } .ds-step { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; font-stretch:84%; display:flex; align-items:center; gap:6px; height:28px; padding:0 12px; border-radius:var(--radius-xs,2px); font-size:13px; font-weight:600; color:var(--color-g9,#b3b9c2); cursor:pointer; transition:color 150ms; } .ds-step:hover { color:var(--color-g10,#e8eaee); } .ds-step i { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; font-style:normal; font-size:10.5px; opacity:.7; } .ds-step b { color:var(--color-ok,#4dc48c); font-size:12px; } .ds-on { background:var(--color-g10,#e8eaee); color:var(--color-g0,#0a0b0d); } .ds-on:hover { color:var(--color-g0,#0a0b0d); } .ds-off { color:var(--color-g6,#3b424d); cursor:default; } .ds-off:hover { color:var(--color-g6,#3b424d); }"
+    },
+    {
+      "name": "Tags",
+      "kind": "chip",
+      "refersTo": "tag-neutral",
+      "description": "Mono uppercase chips; marker solid for news categories, tinted tones for kinds and states. Placed in a meta row below a heading.",
+      "html": "<div class=\"ds-tags\"><span class=\"ds-tag ds-t-marker\">War</span><span class=\"ds-tag ds-t-anchor\">Anchor 1</span><span class=\"ds-tag ds-t-vo\">VO 2</span><span class=\"ds-tag ds-t-warn\">Portrait</span><span class=\"ds-tag\">Thumb</span></div>",
+      "css": ".ds-tags { display:flex; gap:6px; } .ds-tag { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; display:inline-flex; align-items:center; height:20px; padding:0 6px; border-radius:var(--radius-xs,2px); font-size:10.5px; font-weight:500; letter-spacing:.025em; text-transform:uppercase; background:var(--color-g4,#22272f); color:var(--color-g9,#b3b9c2); } .ds-t-marker { background:var(--color-marker,#e31b23); color:#fff; } .ds-t-anchor { background:rgba(171,156,255,.15); color:var(--color-anchor,#ab9cff); } .ds-t-vo { background:rgba(95,179,234,.15); color:var(--color-vo,#5fb3ea); } .ds-t-warn { background:rgba(242,193,78,.15); color:var(--color-warn,#f2c14e); }"
+    },
+    {
+      "name": "Contact Sheet with Marked Frame",
+      "kind": "custom",
+      "refersTo": "contact-sheet",
+      "description": "Signature: frames on the sheet-black panel under an amber count line; a picked frame carries the red loop and a bare marker numeral.",
+      "html": "<div class=\"ds-sheet\"><div class=\"ds-count\">Roll 02 <s>·</s> 9 videos <s>·</s> 3 frames <s>·</s> 1 picked</div><div class=\"ds-grid\"><figure class=\"ds-frame\"><div class=\"ds-pic\"><span class=\"ds-score\">88</span></div><svg class=\"ds-loop\" viewBox=\"0 0 200 112\" preserveAspectRatio=\"none\"><path d=\"M 8 52 C 4 20, 40 3, 100 5 S 197 28, 194 60 S 150 110, 90 108 S 3 92, 11 46\" pathLength=\"1\"/></svg><span class=\"ds-num\">1</span><figcaption><span class=\"ds-code\">R02·F01a</span> Missile launch</figcaption></figure><figure class=\"ds-frame\"><div class=\"ds-pic\"><span class=\"ds-score\">64</span></div><figcaption><span class=\"ds-code\">R02·F01b</span> Swarm engagement</figcaption></figure></div></div>",
+      "css": ".ds-sheet { background:#060607; border-radius:var(--radius-md,5px); box-shadow:0 0 0 1px var(--color-g4,#22272f); padding:16px; width:440px; } .ds-count { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; font-size:11.5px; letter-spacing:.025em; text-transform:uppercase; color:var(--color-edge,#df9a4c); margin-bottom:16px; } .ds-count s { text-decoration:none; color:var(--color-g6,#3b424d); margin:0 6px; } .ds-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; } .ds-frame { position:relative; margin:0; } .ds-pic { position:relative; aspect-ratio:16/9; border-radius:var(--radius-xs,2px); background:linear-gradient(160deg,#3b424d,#14171c); box-shadow:0 0 0 1px var(--color-g4,#22272f); transition:box-shadow 200ms; } .ds-pic:hover { box-shadow:0 0 0 1px var(--color-g7,#58606c); } .ds-score { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; position:absolute; top:6px; left:6px; height:20px; padding:0 6px; display:flex; align-items:center; font-size:10.5px; border-radius:2px; background:rgba(0,0,0,.75); color:var(--color-ok,#4dc48c); } .ds-loop { position:absolute; left:-7px; top:-7px; width:calc(100% + 14px); aspect-ratio:200/112; overflow:visible; pointer-events:none; } .ds-loop path { fill:none; stroke:var(--color-marker,#e31b23); stroke-width:3.2; stroke-linecap:round; vector-effect:non-scaling-stroke; stroke-dasharray:1; stroke-dashoffset:1; animation:ds-draw 220ms cubic-bezier(0.16,1,0.3,1) forwards; } @keyframes ds-draw { to { stroke-dashoffset:0; } } .ds-num { position:absolute; top:-20px; right:-6px; font-family:'Caveat Brush','Marker Felt',cursive; font-size:42px; line-height:1; color:var(--color-marker,#e31b23); -webkit-text-stroke:6px #0a0b0d; paint-order:stroke fill; transform:rotate(-8deg); } figcaption { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; margin-top:6px; font-size:12.5px; color:var(--color-g9,#b3b9c2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .ds-code { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:.02em; color:var(--color-edge,#df9a4c); margin-right:8px; }"
+    },
+    {
+      "name": "Proportional Parts Rail",
+      "kind": "custom",
+      "description": "Signature: part heights at 7 px per second (44 px floor), amber durations, fill bars green when full and yellow when short.",
+      "html": "<nav class=\"ds-rail\"><div class=\"ds-part\" style=\"height:98px\"><span class=\"ds-pt\">Anchor 1<em>0:14</em></span><span class=\"ds-bar\"><i style=\"width:100%;background:#4dc48c\"></i></span></div><div class=\"ds-part ds-cur\" style=\"height:84px\"><span class=\"ds-pt\">VO 1<em>0:12</em></span><span class=\"ds-bar\"><i style=\"width:33%;background:#f2c14e\"></i></span></div><div class=\"ds-part\" style=\"height:44px\"><span class=\"ds-pt\">VO 2<em>0:05</em></span></div></nav>",
+      "css": ".ds-rail { width:232px; display:flex; flex-direction:column; gap:6px; } .ds-part { display:flex; flex-direction:column; justify-content:space-between; padding:8px 12px; border:1px solid var(--color-g4,#22272f); border-radius:var(--radius-sm,3px); background:var(--color-g1,#0f1115); box-sizing:border-box; cursor:pointer; transition:border-color 150ms; } .ds-part:hover { border-color:var(--color-g6,#3b424d); } .ds-cur { background:var(--color-g2,#14171c); border-color:var(--color-g6,#3b424d); box-shadow:-3px 0 0 var(--color-marker,#e31b23); } .ds-pt { font-family: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif; font-stretch:84%; display:flex; font-size:13.5px; font-weight:600; color:var(--color-g10,#e8eaee); } .ds-pt em { font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace; font-style:normal; margin-left:auto; font-size:11.5px; color:var(--color-edge,#df9a4c); } .ds-bar { display:block; height:4px; border-radius:9999px; background:var(--color-g4,#22272f); overflow:hidden; } .ds-bar i { display:block; height:100%; border-radius:9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Contact Sheet",
+    "overview": "Every story is a roll of film. The editor works on film-rebate black, looks at found footage laid out as frames on a darker sheet, marks the ones to use with a red china-marker loop and a hand-written play-order numeral, and reads every time, code and count as amber edge print. The interface is dense and desktop-first (1280 px and up), a working instrument for several stories a day, not a showcase.\n\nOne graphite ramp of eleven slightly blue steps carries every neutral: grounds, surfaces, hairline seams and text. Colour is spent on meaning only. DNL red is selection, the primary action and on-air; amber is measurement; violet and steel blue tell anchor parts from voiceover parts; green, yellow and red-pink report state. One workhorse sans (Archivo) does everything, using its width axis for condensed labels, and JetBrains Mono prints the edge numbers.\n\nThe world borrows the contact sheet's logic, not its costume: no sprocket holes, film grain or imitation stock. Depth comes from tonal steps and hairlines; shadows are neutral and only lift floating layers. Motion is short expo ease-out, and the signature loop draws in 220 ms.",
+    "keyCharacteristics": [
+      "Film-rebate black ground with an eleven-step graphite ramp.",
+      "Amber mono edge print for every measurement: frame codes (R02·F01a), timecodes, durations, counts.",
+      "DNL red as the china marker: picked frames, primary action, on-air, active nav.",
+      "Hairline seams and tight 2 to 5 px corners.",
+      "Archivo for words (width axis for condensed labels), JetBrains Mono for numbers, Caveat Brush only for picked numerals.",
+      "Expo ease-out motion; the signature loop has no spring."
+    ],
+    "rules": [
+      {
+        "name": "The Meaning-Only Rule",
+        "body": "No colour is decorative. If a hue appears, it is marking a pick, a measurement, a part kind or a state.",
+        "section": "colors"
+      },
+      {
+        "name": "The g8 Floor Rule",
+        "body": "Graphite 8 is the lowest step that may carry text; every text must meet WCAG AA. Graphite 7 and darker are for borders, placeholders and disabled states only.",
+        "section": "colors"
+      },
+      {
+        "name": "The Edge-Print Rule",
+        "body": "Every measurement (time, code, count, percent of a target) is set in mono, tabular, in edge-print amber.",
+        "section": "colors"
+      },
+      {
+        "name": "The Narrow Rule",
+        "body": "The condensed width (84%) is for labels that sit in tracks and rails: step track, segmented controls, tabs, rail titles. Body and headings stay at normal width.",
+        "section": "typography"
+      },
+      {
+        "name": "The Bare Numeral Rule",
+        "body": "Caveat Brush appears only as play-order numerals on picked frames and in the picked list. It is written bare in marker red with a ground-coloured stroke (6 px of g0, painted under the fill), never inside a disc or badge.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Kicker Rule",
+        "body": "Nothing sits above a heading: no eyebrow, no kicker. Category and status tags go in a meta row below the title.",
+        "section": "typography"
+      },
+      {
+        "name": "The Proportional Rail Rule",
+        "body": "In the parts rail, each part's height is its seconds: 7 px per second, with a 44 px floor. Short parts drop their text snippet rather than break the proportion.",
+        "section": "layout"
+      },
+      {
+        "name": "The Contact Sheet Rule",
+        "body": "Found frames sit on the sheet-black panel (5 px corners, a g4 hairline ring, 16 px inside) headed by one mono amber, uppercase count line: roll, videos, frames, picked, seconds of target.",
+        "section": "layout"
+      },
+      {
+        "name": "The Neutral Shadow Rule",
+        "body": "Shadows are black. No coloured glows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Tonal-First Rule",
+        "body": "A surface earns separation by stepping up the graphite ramp and taking a hairline, not by casting a shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No-Costume Rule",
+        "body": "No imitation film material: no sprocket holes, perforations, grain, light leaks or rebate lettering. The contact sheet is a layout idea, not a texture.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** set every measurement (times, codes, counts, durations against target) in mono, tabular, edge-print amber.",
+      "**Do** reserve marker red for picks, the primary action, on-air and live progress, keyboard focus and news-category tags.",
+      "**Do** keep text at g8 or brighter and every text pair at AA; keep running text at 12 px or larger.",
+      "**Do** use the condensed width only for labels in tracks and rails: step track, segmented controls, tabs, rail titles.",
+      "**Do** put category and status tags in a meta row below the heading.",
+      "**Do** size parts-rail entries at 7 px per second with a 44 px floor.",
+      "**Do** lay found frames on the sheet-black panel under a mono amber count line.",
+      "**Do** animate on expo ease-out (cubic-bezier(0.16, 1, 0.3, 1)); 150 ms for hover, 220 ms for the marker loop, 240 to 320 ms for dialogs, sheets and page changes."
+    ],
+    "donts": [
+      "**Don't** use Caveat Brush anywhere but play-order numerals on picked frames and in the picked list, and never put the numeral in a disc.",
+      "**Don't** put an eyebrow or kicker above a heading.",
+      "**Don't** imitate film material: no sprocket holes, perforations or grain.",
+      "**Don't** use coloured glow shadows; shadows are black.",
+      "**Don't** use g7 or darker for readable text.",
+      "**Don't** put a spring on the marker loop."
+    ]
+  }
+}

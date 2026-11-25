@@ -1,0 +1,15 @@
+# Is everything up by itself? 07:30 IST (after t7's daily 07:00 restart, before the 08:00 daily run) and 23:30 IST
+# (before the 00:00-07:00 render window). A failed run = something the daily pipeline needs is down: see the log.
+name: doctor
+on:
+  schedule:
+    - cron: "0 2 * * *"     # 07:30 IST
+    - cron: "0 18 * * *"    # 23:30 IST
+  workflow_dispatch:
+jobs:
+  doctor:
+    runs-on: [self-hosted, rig-video]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 ops/doctor.py

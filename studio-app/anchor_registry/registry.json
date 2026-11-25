@@ -1,0 +1,241 @@
+{
+  "_note": "Locked roster (mirrors ANCHOR_REGISTRY.md). Human edits only. affinity is a soft preference, not a restriction. descriptor = hair/wardrobe as seen in frames/<id>.png (identity itself is pinned by that frame as <Picture 2>). status -> ready only after the identity-pinned onboarding seed is approved by the user. identity_face = head-and-shoulders cut-out on plain grey, used as the seed's <Picture 2> (a full frame made H3 copy its framing; user-approved fix 2026-10-10). identity_ref stays the QC reference frame. words_per_shot = spoken words that fill one 13.67 s shot at the anchor's own pace (H3 copies the pace of the locked voice); measured from onboarding seeds 2026-10-11 (Yuna 2.97 w/s -> 39, others 2.3-2.5 -> 33).",
+  "anchors": [
+    {
+      "id": "maren_ashcroft",
+      "name": "Maren Ashcroft",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/maren_ashcroft__newsanchor_ref.wav",
+      "voice_sha256": "11a12e2476492445e615bfc7d6095771c51211135dc5efa7e684ecdc13005fa1",
+      "identity_ref": "frames/maren_ashcroft.png",
+      "identity_sha256": "b3bf0f8c899ff417165f2112151ca04c715080182dce8fb678e73db809cb5f2a",
+      "identity_video": "videos/maren_ashcroft.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has short dark hair neatly styled, is clean-shaven, and wears a dark charcoal suit, a crisp white shirt and a deep burgundy tie.",
+      "affinity": [
+        "europe",
+        "russia_ukraine",
+        "global"
+      ],
+      "status": "ready",
+      "identity_face": "frames/maren_ashcroft_face.png",
+      "identity_face_sha256": "57bcc52e8404944b0923ab333756528ce32866955742f79a55e2621761c4e95a",
+      "words_per_shot": 33,
+      "voice_wps": 3.023
+    },
+    {
+      "id": "desmond_okafor",
+      "name": "Desmond Okafor",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/desmond_okafor__connery.wav",
+      "voice_sha256": "dea6b32ba9d29c8a36d0e63071b7b325d73cef35004d2689c3dd95be60c3af81",
+      "identity_ref": "frames/desmond_okafor.png",
+      "identity_sha256": "fd38f0dd4c0f761035bdcd226430f71c821e3538e437d84b73ee716046eedffc",
+      "identity_video": "videos/desmond_okafor.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has closely cropped black hair and a short neat beard, and wears a charcoal suit, a light-blue shirt, a deep navy tie and a brushed-steel watch.",
+      "affinity": [
+        "africa"
+      ],
+      "status": "ready",
+      "identity_face": "frames/desmond_okafor_face.png",
+      "identity_face_sha256": "87360fdaa961c8c17e66326695aa13126ab73887a399d499906e1b3865918af3",
+      "words_per_shot": 33
+    },
+    {
+      "id": "emre_yildiz",
+      "name": "Emre Yildiz",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/emre_yildiz__mirac.wav",
+      "voice_sha256": "07e7c1c14ac57d307161aba16bea4763abe43102b5b9063e7c06f0876d63e907",
+      "identity_ref": "frames/emre_yildiz.png",
+      "identity_sha256": "aaac28e634d2d804b8cec160dcffd264278336a12f333e2618651b78c67856a3",
+      "identity_video": "videos/emre_yildiz.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has short dark hair swept up at the front and a light dark stubble, and wears a charcoal suit, a crisp white shirt and a dark green tie.",
+      "affinity": [
+        "middle_east",
+        "turkey"
+      ],
+      "status": "ready",
+      "identity_face": "frames/emre_yildiz_face.png",
+      "identity_face_sha256": "9626206133c6da904cfcd7cf3ebba9bd68e86cd8963e872d1d1911e81fb738cf",
+      "words_per_shot": 33
+    },
+    {
+      "id": "mateo_reyes",
+      "name": "Mateo Reyes",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/mateo_reyes__jones.wav",
+      "voice_sha256": "b0e971d6c027c083698f1f3fd55c457a5476268bf812748615f06f1175b67b36",
+      "identity_ref": "frames/mateo_reyes.png",
+      "identity_sha256": "9d76ca02255b7a64c17785349270f1def600457000c4ccab9c3980cc77c81cd5",
+      "identity_video": "videos/mateo_reyes.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has short dark hair greying at the temples and a light stubble, and wears a charcoal suit, a crisp white shirt and a forest-green tie.",
+      "affinity": [
+        "latin_america"
+      ],
+      "status": "ready",
+      "identity_face": "frames/mateo_reyes_face.png",
+      "identity_face_sha256": "0ba622da1a026989ebf4d2d36fc536bdfb3d8cf0482d18388f514857d1a260ba",
+      "words_per_shot": 33
+    },
+    {
+      "id": "arjun_malhotra",
+      "name": "Arjun Malhotra",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/arjun_malhotra__ishaan.wav",
+      "voice_sha256": "9b835ac3eefcfc2f12c7313f1431e3e3dadd9fbda32b07282cbdc64f3e8b6a2a",
+      "identity_ref": "frames/arjun_malhotra.png",
+      "identity_sha256": "1a0592bec3342122ac59f1d5e157adb34c30670571a8e4a59703982468de06f3",
+      "identity_video": "videos/arjun_malhotra.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has short black hair neatly side-swept and a light stubble, and wears a dark slate-grey suit, a crisp white shirt and a burgundy tie.",
+      "affinity": [
+        "south_asia"
+      ],
+      "status": "ready",
+      "identity_face": "frames/arjun_malhotra_face.png",
+      "identity_face_sha256": "717829a7448c15b220f6dbf53ecc64053c5209386bcfa2388fdfc0cfd8a5cdff",
+      "words_per_shot": 33,
+      "voice_wps": 2.373
+    },
+    {
+      "id": "simone_baptiste",
+      "name": "Simone Baptiste",
+      "gender": "F",
+      "pronoun": "she",
+      "voice_file": "voices/simone_baptiste__h3default.wav",
+      "voice_sha256": "7044553ddc47d5088bff65bca3d1586cfbd7802e1a16fffe0fb04d51d7c13cd5",
+      "identity_ref": "frames/simone_baptiste.png",
+      "identity_sha256": "d5c3ce235e207b745634f6f0dde32bea8760d05e6a88c06572ba5e774976c64a",
+      "identity_video": "videos/simone_baptiste.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "She has black hair in a sleek low bun, and wears a deep burgundy fitted blazer over a plain black top, with small gold stud earrings.",
+      "affinity": [
+        "north_america",
+        "caribbean"
+      ],
+      "status": "ready",
+      "identity_face": "frames/simone_baptiste_face.png",
+      "identity_face_sha256": "be857faa71bb2d92e272251cdea429e53b330a9fe1eaa39b34429619a8ceb124",
+      "words_per_shot": 33
+    },
+    {
+      "id": "priya_nair",
+      "name": "Priya Nair",
+      "gender": "F",
+      "pronoun": "she",
+      "voice_file": "voices/priya_nair__tara.wav",
+      "voice_sha256": "af4c8873a6f1210b93399054a269d93e7c0f75fd108fa9f2bfdd76111ca851d7",
+      "identity_ref": "frames/priya_nair.png",
+      "identity_sha256": "f1c8db49fcfff0d61ef40c66c6b378896659a0e716dc57303ef808131b7bae6a",
+      "identity_video": "videos/priya_nair.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "She has dark hair pulled back smoothly, and wears a deep teal fitted blazer over a plain ivory top, with small gold stud earrings and a thin gold bangle.",
+      "affinity": [
+        "south_asia"
+      ],
+      "status": "ready",
+      "identity_face": "frames/priya_nair_face.png",
+      "identity_face_sha256": "f08de9ce556c2dc44e4aaa49b3405dc1deb7cf3c80eba53fc2aa42fbebce63d1",
+      "words_per_shot": 33,
+      "voice_wps": 2.269
+    },
+    {
+      "id": "chloe_whitfield",
+      "name": "Chloe Whitfield",
+      "gender": "F",
+      "pronoun": "she",
+      "voice_file": "voices/chloe_whitfield__newsreader.wav",
+      "voice_sha256": "ae94161a63089fb86ced0df24d67426bcd8e05a6c7826afddb6b98a1b0225dca",
+      "identity_ref": "frames/chloe_whitfield.png",
+      "identity_sha256": "075155c2e6ac8082a6fb39d895b8d4f6c44d08395531e23ce308dd443098104c",
+      "identity_video": "videos/chloe_whitfield.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "She has long wavy blonde hair past her shoulders, and wears a bright red fitted blazer over a white top.",
+      "affinity": [
+        "oceania",
+        "uk",
+        "north_america"
+      ],
+      "status": "ready",
+      "identity_face": "frames/chloe_whitfield_face.png",
+      "identity_face_sha256": "fb9a4b6908f29433a55634dc371ec893ce9284b3778a66994060a15e49d41c91",
+      "words_per_shot": 33,
+      "voice_file_previous": "voices/chloe_whitfield__milly.wav",
+      "voice_note": "2026-10-11, user choice: ElevenLabs library voice 'Global Artist - Newsreader' (British; preview clip, 8.3 s, 174 Hz median pitch) replaces 'milly' (Milly - Cheerful Aussie Presenter, 257 Hz: too loud/high for the desk)"
+    },
+    {
+      "id": "eleanor_marsh",
+      "name": "Eleanor Marsh",
+      "gender": "F",
+      "pronoun": "she",
+      "voice_file": "voices/eleanor_marsh__video.wav",
+      "voice_sha256": "9d600f212ab79930933a78517a79ee856dfefbbdba459ddc8cd380b4c7a88cd4",
+      "identity_ref": "frames/eleanor_marsh.png",
+      "identity_sha256": "cf123d3a928efa263d62b1079dd69e77ce25f31177df77a6d52fcd76cd94ca3f",
+      "identity_video": "videos/eleanor_marsh.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "She has a dark chin-length bob, and wears a charcoal fitted blazer over a pale blue top.",
+      "affinity": [
+        "europe",
+        "global"
+      ],
+      "status": "ready",
+      "identity_face": "frames/eleanor_marsh_face.png",
+      "identity_face_sha256": "8cca1e59cf2e88358112aa9114a937fd9ac58f27512cea8a2a5339a993d9fe04",
+      "words_per_shot": 39,
+      "voice_file_previous": "voices/eleanor_marsh__lia.wav",
+      "voice_note": "2026-10-11, user instruction: locked voice replaced by the audio of her approved identity video (9.4 s; was lia_ref_padded 5.9 s / 12 words, too short - two seeds drifted to H3's default voice)"
+    },
+    {
+      "id": "yuna_cho",
+      "name": "Yuna Cho",
+      "gender": "F",
+      "pronoun": "she",
+      "voice_file": "voices/yuna_cho__textonly.wav",
+      "voice_sha256": "acbcccff5eff67032fe6d681865cc6e011c0b76489c304f901a00d5d773ad7e9",
+      "identity_ref": "frames/yuna_cho.png",
+      "identity_sha256": "a3e818f9025c85805cdc4a390f4e873ecb5f6cbb2e8081a54d44cdf3a178a3c2",
+      "identity_video": "videos/yuna_cho_text_only_candidate1.mp4",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "She has shoulder-length straight dark brown hair tucked behind one ear, and wears a tailored charcoal-navy blazer over a white silk blouse, with small pearl stud earrings.",
+      "affinity": [
+        "east_asia",
+        "southeast_asia"
+      ],
+      "status": "ready",
+      "identity_face": "frames/yuna_cho_face.png",
+      "identity_face_sha256": "81c75795e63e0a563feb090fe4bd6ec949564b20cb6a3f0e91b2e3789a353335",
+      "words_per_shot": 39,
+      "identity_note": "2026-10-11: new face generated from text only (candidate 1); the old reference photo caused lip-pattern lines. Voice unchanged.",
+      "voice_file_previous": "voices/yuna_cho__sarah.wav",
+      "voice_note": "2026-10-12: voice taken from the text-only candidate-1 render (user choice); Sarah kept as previous."
+    },
+    {
+      "id": "rohit",
+      "name": "Rohit",
+      "gender": "M",
+      "pronoun": "he",
+      "voice_file": "voices/rohit__video.wav",
+      "voice_sha256": "b1a973feabd8bb7c135955919f025440e5a10fd8df090387fbae46a78fbb2ac2",
+      "identity_ref": "frames/rohit.png",
+      "identity_sha256": "42e121501352103a0e3d26856b96e0d51b537a052622b7e3898a03bde6de4886",
+      "set_plate": "bg_options/option_C_tall_room_set/plate_1280x736.png",
+      "descriptor": "He has swept-back silver-white hair and rimless glasses, and wears a light grey suit, a white shirt and a blue paisley tie with a matching blue pocket square.",
+      "affinity": [],
+      "status": "onboarding",
+      "identity_face": "frames/rohit_face.png",
+      "identity_face_sha256": "dfada1890bc9ea865b4a8449aeb0df50e9609d02795c6a4a666de8aa6b714a39",
+      "words_per_shot": 33,
+      "voice_note": "2026-10-13, user request: test seed of the person in 'Rohit Sir pipeline image.png'; voice = 13.95 s of his own video (214.45-228.4 s, clean speech, no music). Not cast (onboarding)."
+    }
+  ]
+}

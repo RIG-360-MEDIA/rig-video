@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+groq
+openai
+qdrant-client
+httpx
+yt-dlp[default]>=2026.8.19
+setuptools<81
+webrtcvad
+pydantic-settings
+websockets
+python-multipart
+reportlab
+pypdf
+psycopg[binary]

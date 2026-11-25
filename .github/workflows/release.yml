@@ -1,0 +1,37 @@
+# Going live = publishing a GitHub Release (tag vX.Y.Z) from main. The release is checked again, installed on
+# t7/t3/t8 by deploy/deploy.sh, and must answer /api/health with its version. If it does not, the last good release
+# is installed again and this run fails (GitHub emails the publisher).
+# Manual re-install / rollback: Actions -> release -> Run workflow -> tag (e.g. the previous release).
+name: release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag: { description: "release tag to install (rollback = an older tag)", required: true }
+concurrency: { group: deploy, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: [self-hosted, rig-video]
+    timeout-minutes: 40
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ env.TAG }}", fetch-depth: 0 }
+      - name: only releases of main
+        run: git merge-base --is-ancestor "$TAG" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+      - name: check
+        run: deploy/check.sh
+      - name: install
+        id: install
+        run: deploy/deploy.sh "$TAG"
+      - name: roll back to the last good release
+        if: failure() && steps.install.outcome == 'failure'
+        run: |
+          prev=$(cat ~/.local/state/rig-video/last-good 2>/dev/null || true)
+          [ -n "$prev" ] && [ "$prev" != "$TAG" ] || { echo "no earlier good release recorded; restore a backup by hand (docs/HANDOFF.md)"; exit 1; }
+          rm -rf "$RUNNER_TEMP/rollback" && git worktree add --force "$RUNNER_TEMP/rollback" "$prev"
+          cd "$RUNNER_TEMP/rollback" && deploy/check.sh && deploy/deploy.sh "$prev"
+          echo "::error::$TAG failed its health check; $prev is live again"
+          exit 1

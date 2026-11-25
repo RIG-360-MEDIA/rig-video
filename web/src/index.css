@@ -1,0 +1,103 @@
+@import "@fontsource-variable/archivo/standard.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";
+@import "@fontsource/caveat-brush/400.css";
+@import "tailwindcss";
+
+/* Contact Sheet world. Film-rebate black, one 11-step graphite ramp (slightly blue), amber edge print
+   for every measurement, DNL china-marker red for selection / primary / on air. */
+@theme {
+  --color-g0: #0a0b0d;
+  --color-g1: #0f1115;
+  --color-g2: #14171c;
+  --color-g3: #1a1e24;
+  --color-g4: #22272f;
+  --color-g5: #2c323b;
+  --color-g6: #3b424d;
+  --color-g7: #58606c;
+  --color-g8: #848c98;
+  --color-g9: #b3b9c2;
+  --color-g10: #e8eaee;
+
+  --color-edge: #df9a4c;      /* edge-print numerals: codes, times, counts */
+  --color-marker: #e31b23;    /* DNL red: selection, primary, on air */
+  --color-marker-ink: #ff5b61; /* red for small text on black */
+  --color-anchor: #ab9cff;    /* on-camera parts */
+  --color-vo: #5fb3ea;        /* voiceover parts */
+  --color-ok: #4dc48c;
+  --color-warn: #f2c14e;
+  --color-bad: #ff5b61;
+
+  --font-sans: "Archivo Variable", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, Menlo, monospace;
+  --font-marker: "Caveat Brush", "Marker Felt", cursive;
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-crawl: crawl 1.2s linear infinite;
+  @keyframes shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+  @keyframes crawl { from { background-position: 0 0 } to { background-position: 24px 0 } }
+}
+
+@layer base {
+  :root { color-scheme: dark; }
+  html, body, #root { height: 100%; }
+  body { overflow-x: clip; }
+  body {
+    background: var(--color-g0);
+    color: var(--color-g10);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    font-variation-settings: "wdth" 100;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: color-mix(in srgb, var(--color-marker) 55%, transparent); color: var(--color-g10); }
+  * { scrollbar-width: thin; scrollbar-color: var(--color-g6) transparent; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: var(--color-g5); border: 3px solid var(--color-g1); border-radius: 6px; }
+  *::-webkit-scrollbar-thumb:hover { background: var(--color-g6); }
+  *::-webkit-scrollbar-track { background: transparent; }
+  input, textarea { caret-color: var(--color-marker); }
+  :focus-visible { outline: 2px solid var(--color-marker); outline-offset: 2px; border-radius: 2px; }
+  a { text-underline-offset: 3px; }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.01em; }
+  p, li, dd { text-wrap: pretty; }
+  input::placeholder, textarea::placeholder { color: var(--color-g7); }
+}
+
+@layer components {
+  /* edge print: every measurement, code and count */
+  .edge { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-edge); letter-spacing: 0.02em; }
+  .label { font-variation-settings: "wdth" 82; font-weight: 600; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-g8); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-g3) 0%, var(--color-g4) 50%, var(--color-g3) 100%);
+    background-size: 200% 100%; animation: var(--animate-shimmer);
+  }
+  /* Archivo's width axis: condensed labels (step track, rail titles, tabs, segmented controls) */
+  .narrow { font-stretch: 84%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+@keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
+@keyframes menuin { from { opacity: 0; transform: translateY(-4px) scale(0.98) } to { opacity: 1; transform: none } }
+@keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+
+/* landing: drifting light behind the hero */
+@keyframes fog-a { 0%,100% { transform: translate(-50%, 0) scale(1) } 50% { transform: translate(-46%, -4%) scale(1.08) } }
+@keyframes fog-b { 0%,100% { transform: translate(0, 0) scale(1) } 33% { transform: translate(18%, -8%) scale(1.15) } 66% { transform: translate(-12%, 6%) scale(0.92) } }
+@keyframes fog-c { 0%,100% { transform: translate(0, 0); opacity: .6 } 50% { transform: translate(-30%, 12%); opacity: 1 } }
+@keyframes fog-breathe { 0%,100% { opacity: .55; transform: scaleX(1) } 50% { opacity: 1; transform: scaleX(1.15) } }
+@media (prefers-reduced-motion: reduce) { [class*="animation:fog"] { animation: none !important } }
+@keyframes kenburns { from { transform: scale(1.02) translate(0, 0) } to { transform: scale(1.14) translate(-3%, 2%) } }
+@keyframes bar { 0%,100% { transform: scaleY(1) } 50% { transform: scaleY(var(--lo)) } }
