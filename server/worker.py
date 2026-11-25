@@ -568,25 +568,32 @@ def save_visuals(pid, sid, kws, found):
     store.update(pid, f)
 
 
+def progress_of(svp):
+    """What moves while the footage backend works: keyword states, videos judged, clip states."""
+    return ([(k["status"], k.get("progress"), sum(bool(v.get("analyzed")) for v in k.get("videos") or [])) for k in keywords_of(svp)],
+            [cl.get("status") for cl in svp.get("clips") or []])
+
+
 def poll(c, svp_id, done, on=None, every=8, most=3600):
-    t0 = time.time()
+    """Wait for the footage backend. Gives up only after `most` seconds WITHOUT progress (2026-11-25: six daily stories
+    at once with YouTube refusing captions took well over an hour, while still moving)."""
+    t0, last = time.time(), None
     while True:
         try:
             svp = c.get(f"{SVB}/footage/projects/{svp_id}").json()
         except Exception:                                           # the footage backend restarting: wait for it
             svp = {}
-        if "segments" not in svp:
-            if time.time() - t0 > most:
-                raise Say("The footage search took over an hour and was stopped.")
-            time.sleep(every)
-            continue
-        blocked_check(c, svp)
-        if on:
-            on(svp)
-        if done(svp):
-            return svp
+        if "segments" in svp:
+            blocked_check(c, svp)
+            if on:
+                on(svp)
+            if done(svp):
+                return svp
+            now = progress_of(svp)
+            if now != last:
+                t0, last = time.time(), now
         if time.time() - t0 > most:
-            raise Say("The footage search took over an hour and was stopped.")
+            raise Say("The footage search made no progress for an hour and was stopped.")
         time.sleep(every)
 
 
@@ -1805,6 +1812,16 @@ if __name__ == "__main__" and sys.argv[1:2] == ["selftest"]:                  # 
         ["missile impact Chmielek Poland", "missile impact Poland"]
     assert retry_lines("missile impact Hmielek Poland", "Russian missile lands in Poland", []) == ["missile impact Poland"]
     assert retry_lines("Russian missile Poland", "Russian missile lands in Poland", t) == []
+    class _C:                                                       # poll: slow but moving is waited for; stalled stops
+        def __init__(self, seq): self.seq = iter(seq)
+        def get(self, url): return type("R", (), {"json": lambda _s, x=next(self.seq): x})()
+    mk = lambda n, st="analyzing": {"segments": [{"keywords": [{"status": st, "videos": [{"analyzed": True}] * n}]}], "clips": []}
+    assert poll(_C([mk(0), mk(1), mk(2), mk(3, "done")]), "x", lambda x: keywords_of(x)[0]["status"] == "done", every=0.01, most=0.015)
+    try:
+        poll(_C([mk(1)] * 50), "x", lambda x: False, every=0.01, most=0.05)
+        raise AssertionError("a stalled search must stop")
+    except Say:
+        pass
     print("ok")
 elif __name__ == "__main__":
     main()

@@ -401,7 +401,7 @@ executor named `checks`.
   127.0.0.1:8787.
 - `poll(c, project, done, on, every=8, most=3600)` (577): polls `GET /footage/projects/<id>`. While the backend is
   restarting (no `segments` in the answer) it waits. Every answer goes through `blocked_check`, then `on(svp)`, then
-  `done(svp)`. Over an hour → `Say("The footage search took over an hour and was stopped.")`.
+  `done(svp)`. An hour with **no progress** (keyword states, videos judged, clip states all unchanged) → `Say("The footage search made no progress for an hour and was stopped.")`. A slow search that keeps moving is waited for.
 - `blocked_check` (515): any keyword or clip error matching `BLOCKED` writes `rigvideo-data/youtube_blocked`
   (`<IST stamp> <error>`) and raises `Say("YouTube is refusing our searches right now (rate limit). Try again later; nothing was lost.")`.
 
@@ -840,7 +840,7 @@ written, so the job loop tries again after 30 min. What `select` does is in HAND
 | ssh/scp to t3 fails, Chatterbox crashes, `gpu.sh` fails | `make_takes`, `store.gpu` | `PLAIN.voice` | traceback in log |
 | Footage backend won't start | `sv_client` | "The footage search service did not start." | `rigvideo-data/footage_backend.log` |
 | YouTube refusing (429, bot check, 403) | `blocked_check` | "YouTube is refusing our searches right now…"; running keywords → error | `rigvideo-data/youtube_blocked` |
-| Search runs over 1 hour | `poll` | "The footage search took over an hour and was stopped." | |
+| Search makes no progress for 1 hour | `poll` | "The footage search made no progress for an hour and was stopped." | Retry resumes the same footage projects |
 | Backend cannot read a part's script | `search_section` | "The footage search could not read part <sid>." (VO path: logged, beat skipped) | |
 | A whole-video download fails | `after_search` | nothing; the video stays, its moments are cut on use | log "download … failed" |
 | Picture search fails | `step_search` | nothing; the part has no photos | log "pictures for … failed" |
