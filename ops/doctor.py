@@ -40,6 +40,10 @@ st, body = http("http://100.72.225.89:8770/api/health")
 h = json.loads(body) if st == 200 else {}
 check("API answers", st == 200, h.get("version", body[:120]))
 check("API job loop alive", bool(h.get("monitor")))
+if (HOME / ".config/rigvideo/tunnel.token").exists():                # the public link through Cloudflare
+    en = sh("systemctl", "--user", "is-enabled", "rigvideo-tunnel").stdout.strip()
+    st, _ = http("https://rigtvnews.rig360media.com/api/health", timeout=15)
+    check("public link rigtvnews.rig360media.com", en == "enabled" and st == 200, f"{en}, HTTP {st}")
 
 env = {}
 for line in (HOME / ".config/rigvideo/api.env").read_text().splitlines() if (HOME / ".config/rigvideo/api.env").exists() else []:

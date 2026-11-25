@@ -51,14 +51,40 @@ def mine(pid, u):
     return p
 
 
+FAILS = {}                                                          # sign-in failures: key -> [times]; in memory
+FAIL_MAX, FAIL_WINDOW = 5, 900                                      # 5 wrong passwords in 15 min locks that email / address
+
+
+def client_ip(request):
+    """The visitor's address: Cloudflare's header on the public link (rigtvnews.rig360media.com), else the socket."""
+    return request.headers.get("cf-connecting-ip") or (request.client.host if request.client else "?")
+
+
+def locked(keys, now):
+    for k in keys:
+        FAILS[k] = [t for t in FAILS.get(k, []) if now - t < FAIL_WINDOW]
+    return any(len(FAILS[k]) >= FAIL_MAX for k in keys)
+
+
 @app.post("/api/login")
-def login(response: Response, body: dict = Body(...)):
-    u = store.check_password(str(body.get("email") or ""), str(body.get("password") or ""))
+def login(request: Request, response: Response, body: dict = Body(...)):
+    email = str(body.get("email") or "").strip().lower()
+    keys, now = ("email:" + email, "ip:" + client_ip(request)), time.time()
+    with LOCK:
+        if locked(keys, now):
+            raise HTTPException(429, "Too many wrong passwords. Try again in 15 minutes.")
+    u = store.check_password(email, str(body.get("password") or ""))
     if not u:
+        with LOCK:
+            for k in keys:
+                FAILS.setdefault(k, []).append(now)
         time.sleep(1)
         raise HTTPException(401, "That email and password don't match.")
+    with LOCK:
+        FAILS.pop(keys[0], None)
+    https = request.headers.get("x-forwarded-proto") == "https" or os.environ.get("RIGVIDEO_HTTPS") == "1"
     response.set_cookie(COOKIE, store.session_token(u["id"]), max_age=30 * 86400, httponly=True, samesite="lax",
-                        secure=os.environ.get("RIGVIDEO_HTTPS") == "1")
+                        secure=https)
     return {"ok": True}
 
 

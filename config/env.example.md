@@ -13,6 +13,7 @@ private `secrets-backup` branch of Yash-2704/rig-platform. Only the variable NAM
 | `~/.config/anchor-studio/llm.env` | `GROQ_API_KEY` (comma list), `RIG_GATEWAY_KEY` | LLM fallback pool |
 | `~/.config/anchor-studio/search.env` | `TAVILY_API_KEY`, `SERPAPI_KEY` | story pictures / photo search |
 | `~/.config/anchor-studio/youtube.env` | `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, `YT_PENDING_PLAYLIST_ID`, `YT_BULLETIN_PLAYLIST_ID` | upload + Post (DNL channel) |
+| `~/.config/rigvideo/tunnel.token` | Cloudflare Tunnel token (Rigtvnews tunnel) for the public link | rigvideo-tunnel.service |
 | `~/.config/anchor-studio/footage-auth` | the footage backend's login password (one line) | footage backend + worker |
 | `~/warp/wgcf-account.toml`, `~/warp/wgcf-profile.conf`, `~/warp/wireproxy.conf` | Cloudflare WARP account + WireGuard key | warp-proxy.service |
 | `~/.ssh/to_trijya3` | ssh key to t3 (voice runs, writer switch, deploys) | worker, deploy |

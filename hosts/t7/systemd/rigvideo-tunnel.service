@@ -1,0 +1,17 @@
+# Public link for the site, https://rigtvnews.rig360media.com: a Cloudflare Tunnel (named "Rigtvnews" in the org's
+# Cloudflare, Networking -> Tunnels) to the API at http://100.72.225.89:8770 (the API listens only on the Tailscale
+# address, so the route must not say localhost). The public hostname and its DNS record are set in Cloudflare (Networks -> Tunnels -> Rigtvnews), not here.
+# Token: ~/.config/rigvideo/tunnel.token (600, never in git). Uses the cloudflared already in /usr/local/bin; the other
+# team's own tunnel on this box is a separate process (metrics 7420) and is not touched. Starts on boot (linger is on).
+[Unit]
+Description=Cloudflare Tunnel: public link to the RIG-Video site
+After=network-online.target rigvideo-api.service
+ConditionPathExists=%h/.config/rigvideo/tunnel.token
+
+[Service]
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate --metrics 127.0.0.1:7421 run --token-file %h/.config/rigvideo/tunnel.token
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

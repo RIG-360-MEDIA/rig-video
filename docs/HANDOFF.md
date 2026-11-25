@@ -134,6 +134,7 @@ admin (sudo) rights.**
 | Machine | Unit / process | Port | Boot | What it is |
 |---|---|---|---|---|
 | t7 | `rigvideo-api.service` | 8770 | yes | The API (FastAPI/uvicorn) that also serves the built website, plus the **job loop** (section 4). |
+| t7 | `rigvideo-tunnel.service` | — | yes | Cloudflare Tunnel connector: the public link https://rigtvnews.rig360media.com (section 7). Another team's own tunnel on t7 is separate; leave it alone. |
 | t7 | `vo-vision.service` | 11620 | yes | llama.cpp serving **Qwen3-VL 8B Q8**, the clip checker's eyes. Sleeps after 10 idle minutes and wakes on the next call. |
 | t7 | `warp-proxy.service` | 127.0.0.1:18091 | yes | SOCKS5 proxy out through **Cloudflare WARP**. YouTube blocks the office IP, so every YouTube download goes through this. |
 | t7 | `actions-runner.service` | — | yes | GitHub Actions self-hosted runner: CI and releases (section 13). |
@@ -344,8 +345,17 @@ The final video is rebuilt automatically whenever the edit or a picked voice cha
 
 ## 7. The website (what editors use)
 
-React + Vite + TypeScript (`web/`). It is built into `~/anchor-studio/rigvideo/dist` and served by the API at
-**http://100.72.225.89:8770**, which is reachable only inside Tailscale. The site talks only to `/api/*`, `/files/*` and
+React + Vite + TypeScript (`web/`). It is built into `~/anchor-studio/rigvideo/dist` and served by the API.
+
+- **Public link (editors): https://rigtvnews.rig360media.com.** A Cloudflare Tunnel named **Rigtvnews** in the org's
+  Cloudflare account (Networking → Tunnels) carries it to t7. `rigvideo-tunnel.service` (t7, starts on boot) runs the
+  connector with the token in `~/.config/rigvideo/tunnel.token`. In Cloudflare the tunnel has one published-application
+  route, `rigtvnews.rig360media.com` → `http://100.72.225.89:8770`. **It must not say `localhost`:** the API listens only on
+  the Tailscale address, and `localhost` gives a 502. Cloudflare made the DNS record (a CNAME to the tunnel) itself.
+- **Inside the office network:** http://100.72.225.89:8770 (Tailscale only).
+- **Sign-in protection:** every page except the landing, sign-in and `/api/health` needs an account, media files included.
+  Five wrong passwords in 15 minutes lock that email and that address for 15 minutes (`app.login`; in memory, so a
+  restart clears it). The session cookie is marked Secure when the visit is over HTTPS. The site talks only to `/api/*`, `/files/*` and
 `/anchor-media/*`. For local development, `npm run dev` in `web/` proxies those paths to the API (`RIGVIDEO_API` picks another one).
 
 | Page | Path | What it is for |
@@ -461,7 +471,7 @@ rig-video/
 │   ├── backend/        footage search backend (vendored, see footage/UPSTREAM.md)
 │   └── ytdlp_node.sh   the yt-dlp wrapper EVERY YouTube download uses (Node 22 + WARP)
 ├── hosts/
-│   ├── t7/  systemd units (rigvideo-api, vo-vision, warp-proxy, actions-runner), vo_vision_serve.sh,
+│   ├── t7/  systemd units (rigvideo-api, rigvideo-tunnel, vo-vision, warp-proxy, actions-runner), vo_vision_serve.sh,
 │   │        requirements/*.txt (exact package lists of the 4 Python environments)
 │   ├── t3/  gpu.sh (writer/voice switch), rigvideo-writer.service, setup_writer.sh, setup_voice.sh,
 │   │        chatterbox-requirements.txt
@@ -530,6 +540,7 @@ and variable by name. In short (t7):
 | `~/.config/anchor-studio/llm.env` | Groq keys (fallback pool) |
 | `~/.config/anchor-studio/search.env` | Tavily, SerpAPI |
 | `~/.config/anchor-studio/footage-auth` | Footage backend login password |
+| `~/.config/rigvideo/tunnel.token` | Cloudflare Tunnel token for the public link (from the tunnel's page in Cloudflare; rotate there and replace this file) |
 | `~/warp/*` | WARP account and WireGuard key |
 | `~/.ssh/to_trijya3`, `rigvideo_deploy_t8` | Keys from t7 to t3 (general) and to t8 (forced to `~/vision/deploy_recv.sh`) |
 

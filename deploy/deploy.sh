@@ -32,7 +32,7 @@ tar -czf "$STATE/backups/$(date -u +%Y%m%dT%H%M%SZ)-before-$VER.tgz" -C "$HOME" 
   anchor-studio/rigvideo/server anchor-studio/rigvideo/dist anchor-studio/rigvideo/VERSION anchor-studio/studio-app/pipeline \
   anchor-studio/studio-app/anchor_registry/registry.json anchor-studio/studio-app/lt_remotion/src anchor-studio/vertical/*.py anchor-studio/repos/social_verifier/backend/app \
   anchor-studio/repos/social_verifier/start_backend.sh anchor-studio/repos/social_verifier/ytdlp_node.sh vo_check/vo_vision_serve.sh \
-  .config/systemd/user/rigvideo-api.service .config/systemd/user/vo-vision.service .config/systemd/user/warp-proxy.service 2>/dev/null
+  .config/systemd/user/rigvideo-api.service .config/systemd/user/vo-vision.service .config/systemd/user/warp-proxy.service .config/systemd/user/rigvideo-tunnel.service 2>/dev/null
 ls -t "$STATE/backups"/*.tgz | tail -n +21 | xargs -r rm --                 # keep the last 20
 
 say "t3: script model switch + voice tools"
@@ -59,6 +59,9 @@ echo "$VER" > "$A/rigvideo/VERSION"
 say "t7: boot services on, restart what changed"
 systemctl --user daemon-reload
 systemctl --user enable warp-proxy vo-vision rigvideo-api actions-runner 2>/dev/null || systemctl --user enable warp-proxy vo-vision rigvideo-api
+if [ -s "$HOME/.config/rigvideo/tunnel.token" ]; then                    # public link (rigtvnews.rig360media.com)
+  systemctl --user enable rigvideo-tunnel; systemctl --user is-active -q rigvideo-tunnel || systemctl --user start rigvideo-tunnel
+fi
 systemctl --user is-active -q warp-proxy || systemctl --user start warp-proxy
 [ -n "$VIS" ] && systemctl --user restart vo-vision || systemctl --user is-active -q vo-vision || systemctl --user start vo-vision
 if [ -n "$FOOT" ] && curl -sf -m 3 localhost:8787/api/health >/dev/null; then    # running on old code: start it again
