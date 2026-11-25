@@ -7,6 +7,11 @@
 > - All times are **IST** (UTC+5:30). The machines' clocks and logs are in UTC.
 > - "t3", "t7" and "t8" mean the machines trijya-3, trijya-7 and trijya-8.
 > - Paths starting `~` are in the Linux home directory on that machine.
+>
+> **Deeper detail:** this file is the map. Every part has a full reference chapter in `docs/reference/`:
+> [the website](reference/site.md) · [the API, storage, writer and LLM pool](reference/api.md) ·
+> [the machine jobs (`worker.py`)](reference/worker.md) · [the anchor render chain and shared pipeline](reference/anchor-and-shared-pipeline.md) ·
+> [VO-only, footage search, machines and operations](reference/vo-footage-ops.md).
 
 ---
 
