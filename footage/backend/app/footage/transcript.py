@@ -257,6 +257,12 @@ def _download_caption(url: str) -> str:
             raise httpx.HTTPError(str(e)) from e
         finally:
             _caption_state["last"] = time.time()
+        if resp.status_code == 429 and "tlang=" in url:
+            # YouTube's machine translation (a video in another language) is rate-limited on its own: 3 of 10 of the
+            # day's videos got 429 for it while their original captions and every other video's came back 200, from the
+            # office IP and from WARP alike (2026-11-25). Only this video goes to speech-to-text; others keep captions.
+            logger.info("YouTube refused a translated caption (429): this video goes to speech-to-text")
+            raise CaptionsBlocked("429 from YouTube for a translated caption")
         if resp.status_code == 429:
             _caption_state["blocked_until"] = time.time() + CAPTION_COOLDOWN
             logger.warning("YouTube refused captions (429): pausing caption downloads for %.0f s", CAPTION_COOLDOWN)
