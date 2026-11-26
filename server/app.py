@@ -268,7 +268,7 @@ def desk(u=Depends(user)):
     pr = store.prefs(u["id"])
     n = sum(not x.get("reserve") for x in picks)                    # as many cards as the day's picks: one used or removed
     picks = [x for x in picks if x["id"] not in used and x["id"] not in pr["hiddenPicks"]][:n]   # is replaced by the next reserve
-    lib = sorted([p["_library"] for p in store.all_projects(u["workspaceId"]) if p.get("_library")], key=lambda x: x["madeAt"], reverse=True)
+    lib = sorted([p["_library"] for p in ps if p.get("_library")], key=lambda x: x["madeAt"], reverse=True)
     return {"user": {k: u[k] for k in ("id", "name", "email", "role", "workspaceId")}, "workspace": ws,
             "picks": picks, "hiddenPicks": pr["hiddenPicks"], "defaults": pr["defaults"],
             "formats": list(FORMATS), "anchors": anchors(), "projects": [view(p) for p in ps], "jobs": {p["id"]: j for p in ps if (j := job_view(p))},
@@ -997,9 +997,42 @@ def move_up(pid: str, u=Depends(user)):
     return {"ok": True}
 
 
+def finished_why(p):
+    """'' when a rendered story's video may be thrown away (Remake / Discard), else why not."""
+    yt = (p.get("posts") or {}).get("youtube") or {}
+    if yt.get("state") in ("posted", "posting"):
+        return "This video is public on YouTube. Take it down there first."
+    if yt.get("state") == "uploading" or busy(p, "post"):
+        return "It is being uploaded right now. Try again in a few minutes."
+    return ""
+
+
+@app.post("/api/projects/{pid}/remake")
+def remake(pid: str, body: dict = Body(default={}), u=Depends(user)):
+    """A rendered story is opened again: its video is dropped and it goes back to Review to be changed and rendered
+    again ({"now": true}: straight back into the render queue as it is). A YouTube upload awaiting approval is left
+    there and remembered in _oldPosts; the new video gets its own upload."""
+    p = mine(pid, u)
+    if p.get("stage") != "done":
+        raise HTTPException(409, "Only a rendered story can be made again.")
+    if why := finished_why(p):
+        raise HTTPException(409, why)
+
+    def f(q):
+        q["stage"] = "review"
+        for k in ("render", "final", "_library", "videoId"):
+            q.pop(k, None)
+        if yt := (q.get("posts") or {}).pop("youtube", None):
+            q.setdefault("_oldPosts", []).append({**yt, "droppedAt": store.stamp()})
+    store.update(pid, f)
+    return render(pid, {"outro": (p.get("extras") or {}).get("outro", True)}, u) if body.get("now") else view(store.read(pid))
+
+
 @app.post("/api/projects/{pid}/archive")
 def archive(pid: str, u=Depends(user)):
     p = mine(pid, u)
+    if p.get("stage") == "done" and (why := finished_why(p)):
+        raise HTTPException(409, why)
     if any(j.get("state") == "running" for j in (p.get("_jobs") or {}).values()):
         raise HTTPException(409, "The machine is working on this story. Wait until it finishes.")
     store.update(pid, lambda q: q.update(_archived=True))

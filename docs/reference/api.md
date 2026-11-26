@@ -363,7 +363,8 @@ Errors: 409 "The clips can be checked once the script is approved, and not while
 | POST | `/api/post-all` (`:926`) | yes | `ids` | Each story: same checks as one Post; title/description from `posts.youtube` if set, else `post_text` | `post youtube` per story | Never fails as a whole: `{posted: [ids], skipped: {id: reason}}` ("Not found." for a missing story) |
 | POST | `/api/projects/{pid}/cancel` (`:948`) | yes | — | Removes a **queued** render; `stage "review"` | none | 409 "Only a waiting render can be cancelled." |
 | POST | `/api/projects/{pid}/moveup` (`:960`) | yes | — | Swaps `_queuedAt` with the queued story ahead | none | `{ok: true}` (no error if already first or not queued) |
-| POST | `/api/projects/{pid}/archive` (`:972`) | yes | — | `_archived = true` (hidden from the desk) | none | `{ok: true}`; 409 while any job runs |
+| POST | `/api/projects/{pid}/archive` (`:972`) | yes | — | `_archived = true` (hidden from the desk) | none | `{ok: true}`; 409 while any job runs, or (a rendered story) while its YouTube video is public, being made public or uploading |
+| POST | `/api/projects/{pid}/remake` | yes | `{now?: bool}` | A rendered story (`stage done`) is opened again: `stage review`; `render`, `final`, `_library`, `videoId` removed; `posts.youtube` moved to `_oldPosts` (the YouTube upload is left as it is). `now`: then queued for render as it is, with its old outro choice | as `view()` | 409 when not rendered, or its YouTube video is public / being posted / uploading |
 
 ### 2.6 Files and the website
 
@@ -735,6 +736,8 @@ python3 writer.py                                           # writer self-test (
 | Test | What it proves | How |
 |---|---|---|
 | `test_resume.py` | `app.resume()`: a vanished `check` job is restarted and its `resumes` becomes 1; at `resumes = 2` it gives up; `final` restarts with `again`; a `render` goes back to `queued` with `resumes 1` and its `_jobs` entry removed, and gives up at 2; a `post` is never restarted. | Temporary `STUDIO_DATA`; `app.spawn` replaced by a recorder |
+| `test_remake.py` | `app.remake()` sends a rendered story back to Review without its video and keeps an unlisted upload in `_oldPosts`; `now` puts it back in the queue keeping its outro choice; Remake and Discard (`archive`) are refused for a public video; a second Remake is refused. | Temporary `STUDIO_DATA`; `view` replaced by identity |
+| `test_upload.py` | `publish._send_chunks()` uploads in 4 MB chunks and resumes after a dropped chunk (asks YouTube how much arrived, then sends the rest). | A local fake resumable-upload server that drops the second chunk once |
 | `test_writer_busy.py` | `writer.ask()`: a fast stream returns the parsed JSON; a slow stream (under `MIN_TPS` after `CHECK_AFTER_S`, both shortened to 2 s / 6) raises `Busy` with "busy" in the message; a server that sends nothing within `FIRST_TOKEN_S` (set to 1 s) raises `Busy`. | A local `http.server` streaming SSE; `LLM_PROVIDERS` points at it |
 | `test_event_date.py` | `worker.event_query`, `worker.first_reported` and `worker.stated_date`: the first day an event was reported is found from matching titles (one matching report on a day is not enough, and a window that ends before the reports finds none); stated dates are parsed ("November 9", "9th of November", "on a Thursday"), never in the future, and "this week" gives none; a stated day is confirmed with `back=1`. | Fixed title lists; sets `RIGVIDEO_TEST=1` |
 | `test_search_pipelining.py` | `worker.step_search` (anchor formats) searches part 2 while part 1's clips are being cut, cuts one part at a time, and fails the job if a cut fails. | Store, footage backend and search functions replaced by local fakes |

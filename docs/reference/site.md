@@ -135,7 +135,7 @@ Script, Visuals and Review does not re-animate the whole page; `StoryFrame` anim
 - "Saved hh:mm" from `updatedAt` (IST).
 - **Lock strip** at stage `render`/`done`: "In the render queue (Starts at 00:00 IST)…" or "Rendered. Post it from this
   page…".
-- `/story/<id>` with no step goes to the step matching the stage. An unknown or archived id goes to `/desk`.
+- `/story/<id>` with no step goes to the step matching the stage (a rendered story: `render`, the finished video with Post, Remake and Discard; also for 9:16). An unknown or archived id goes to `/desk`.
 
 ---
 
@@ -259,7 +259,8 @@ A section whose text or kind differs from the server's is shown as voice "making
 | `postVideo(id, platform, title, description)` | Post dialog | `posts.youtube = {state: posting}` | `POST /api/projects/<id>/post {platform, title, description}`, poll |
 | `postAll(ids)` | Desk Ready to post | | `POST /api/post-all {ids}` → `{posted, skipped}`; toast counts; poll |
 | `switchFormat(id, "vo_only"\|"anchor_vo")` | FormatSwitch | | flush, `POST /api/projects/<id>/switch {format}`, poll |
-| `archiveProject(id)` | Desk delete | removes it from `order` when the call succeeds | `POST /api/projects/<id>/archive` |
+| `remakeStory(id, now)` | Render page / Review / Desk ready-to-post "Remake" | the returned project; resolves true on success | `POST /api/projects/<id>/remake` |
+| `archiveProject(id)` | Desk delete, "Discard" of a rendered video | removes it from `order` when the call succeeds | `POST /api/projects/<id>/archive` |
 | `duplicateFromLibrary(itemId)` | Library | adds the new story | `POST /api/library/<itemId>/duplicate` |
 | `hidePick`, `showHiddenPicks`, `setDefaults` | Desk, Settings | the list/defaults | `PUT /api/prefs {defaults, hiddenPicks}` (picks: then poll) |
 

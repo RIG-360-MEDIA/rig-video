@@ -16,7 +16,7 @@ const STEPS: { key: Stage; label: string; path?: string }[] = [
   { key: "script", label: "Script", path: "script" },
   { key: "visuals", label: "Visuals", path: "visuals" },
   { key: "review", label: "Review", path: "review" },
-  { key: "render", label: "Render" },
+  { key: "render", label: "Render", path: "render" },
 ];
 const RANK: Record<Stage, number> = { script: 0, visuals: 1, review: 2, render: 3, done: 4 };
 
@@ -27,7 +27,7 @@ export function StoryFrame() {
   const step = loc.pathname.split("/")[3];
   useEffect(() => { window.scrollTo(0, 0); }, [step]);
   if (!p) return <Navigate to="/desk" replace />;
-  if (!step) return <Navigate to={p.stage === "visuals" ? "visuals" : p.stage === "script" ? "script" : "review"} replace />;
+  if (!step) return <Navigate to={p.stage === "visuals" ? "visuals" : p.stage === "script" ? "script" : p.stage === "done" ? "render" : "review"} replace />;
   const current = STEPS.findIndex((s) => s.path === step);
   return (
     <div className="flex min-h-full flex-col">
@@ -41,7 +41,7 @@ export function StoryFrame() {
           <div className="ml-auto flex min-w-0 items-center gap-4">
             <span className="hidden lg:contents"><JobStatus p={p} /></span>
             <nav aria-label="Steps" className="flex items-center rounded-sm border border-g4 bg-g1 p-0.5">
-              {STEPS.filter((s) => !(p.format === "vo_only" && s.key === "render")).map((s, i) => {   // 9:16 posts from Review: no render step
+              {STEPS.map((s, i) => {
                 const reach = RANK[p.stage] >= RANK[s.key];
                 const on = i === current;
                 const done = RANK[p.stage] > RANK[s.key];
@@ -56,7 +56,7 @@ export function StoryFrame() {
                     {s.key === "render" && p.render && p.stage === "render" && <span className="relative edge text-[11px]">{p.render.percent}%</span>}
                   </span>
                 );
-                if (!s.path || !reach) return <Tip key={s.key} label={s.key === "render" ? (p.stage === "render" ? "Rendering. Follow it on the Desk." : "Send it from Review") : "Finish the step before this one"}><span>{body}</span></Tip>;
+                if (!s.path || !reach) return <Tip key={s.key} label={s.key === "render" ? "Send it from Review" : "Finish the step before this one"}><span>{body}</span></Tip>;
                 return <button key={s.key} onClick={() => nav(`/story/${p.id}/${s.path}`)} aria-current={on ? "step" : undefined}>{locked && !on ? <Tip label="Read-only while it renders"><span>{body}</span></Tip> : body}</button>;
               })}
             </nav>
@@ -67,7 +67,7 @@ export function StoryFrame() {
           <div className="border-t border-g4 bg-g1">
             <div className="mx-auto flex min-h-9 max-w-[1680px] items-center gap-2.5 px-4 py-1.5 text-[12.5px] text-g8 sm:px-5">
               <Lock size={13} />
-              {p.stage === "done" ? "Rendered. Post it from this page; the story is read-only." : `In the render queue${p.render?.waitNote ? ` (${p.render.waitNote})` : ""}. This story is read-only until it finishes or you take it out of the queue.`}
+              {p.stage === "done" ? "Rendered. Post it, make it again or discard it on the Render page; the story is read-only." : `In the render queue${p.render?.waitNote ? ` (${p.render.waitNote})` : ""}. This story is read-only until it finishes or you take it out of the queue.`}
             </div>
           </div>
         )}

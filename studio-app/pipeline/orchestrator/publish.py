@@ -5,6 +5,8 @@ YT_PENDING_PLAYLIST_ID, YT_BULLETIN_PLAYLIST_ID), made once with orchestrator/yo
 (human steps: docs/design/YOUTUBE_UPLOAD_ACCESS.md)."""
 import json
 import os
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -30,14 +32,59 @@ def upload(path, title, description, tags, token, privacy=None, log=print):
                                    json.dumps(meta).encode(), {"Authorization": "Bearer " + token, "Content-Type": "application/json",
                                                                "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": str(size)})
     session = urllib.request.urlopen(start, timeout=60).headers["Location"]
-    with open(path, "rb") as f:
-        req = urllib.request.Request(session, f.read(), {"Authorization": "Bearer " + token, "Content-Type": "video/mp4"}, method="PUT")
-    video = json.load(urllib.request.urlopen(req, timeout=900))
+    video = _send_chunks(session, path, size, token, log)
     got = video.get("status", {}).get("privacyStatus")
     if got != meta["status"]["privacyStatus"]:
         log(f"publish: YouTube set the video to '{got}' (asked '{meta['status']['privacyStatus']}') - check the channel's upload "
             f"defaults / API project (docs/design/YOUTUBE_UPLOAD_ACCESS.md)")
     return video
+
+
+CHUNK = 4 * 1024 * 1024                                                # a multiple of 256 KiB, as YouTube asks
+
+
+def _sent_so_far(session, size, token):
+    """Ask YouTube how much of a resumable upload it has: the next byte to send, or the video when it is complete."""
+    req = urllib.request.Request(session, b"", {"Authorization": "Bearer " + token, "Content-Range": f"bytes */{size}"}, method="PUT")
+    try:
+        return json.load(urllib.request.urlopen(req, timeout=60))
+    except urllib.error.HTTPError as e:
+        if e.code != 308:
+            raise
+        got = e.headers.get("Range")                                    # "bytes=0-N" or none yet
+        return int(got.split("-")[1]) + 1 if got else 0
+
+
+def _send_chunks(session, path, size, token, log, tries=8):
+    """The file in CHUNK pieces, each with its own time limit; a piece that fails is sent again from where YouTube says
+    it stopped. One PUT of the whole file timed out on a slow office line (2026-11-26: ~120 KB/s, Python's socket
+    timeout covers the whole send, so 20 MB > 900 s failed every time)."""
+    pos, fails = 0, 0
+    with open(path, "rb") as f:
+        while True:
+            f.seek(pos)
+            data = f.read(CHUNK)
+            end = pos + len(data) - 1
+            req = urllib.request.Request(session, data, {"Authorization": "Bearer " + token, "Content-Type": "video/mp4",
+                                                         "Content-Range": f"bytes {pos}-{end}/{size}"}, method="PUT")
+            try:
+                return json.load(urllib.request.urlopen(req, timeout=300))        # 200/201: the last piece, the video
+            except urllib.error.HTTPError as e:
+                if e.code != 308:
+                    raise
+                got = e.headers.get("Range")
+                pos, fails = (int(got.split("-")[1]) + 1 if got else 0), 0
+            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+                fails += 1
+                if fails > tries:
+                    raise
+                log(f"publish: upload piece at {pos} failed ({e}); asking YouTube where it stopped ({fails}/{tries})")
+                time.sleep(min(60, 5 * fails))
+                got = _sent_so_far(session, size, token)
+                if isinstance(got, dict):
+                    return got
+                pos = got
+            log(f"publish: uploaded {pos * 100 // size}%")
 
 
 def add_to_playlist(video_id, token, playlist=None):

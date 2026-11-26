@@ -8,6 +8,7 @@ import {
 import type { Format, Pick, Project } from "@/data/types";
 import { Button, Dialog, Ring, Segmented, Tag, Tip, cx, istTime, mmss, istDate, IconButton, useFormatOptions } from "@/components/ui";
 import { PhonePlayer, RoughCutPlayer, VideoPlayer } from "@/components/player";
+import { FinishedActions } from "./Render";
 
 const TYPE: Record<string, string> = { war_conflict: "War", death_disaster: "Disaster", democracy: "Democracy", turmoil_unrest: "Unrest" };
 const MIN_PER_OUTPUT_MIN = 23;
@@ -335,10 +336,10 @@ function ReadyToPost() {
       </div>
       <ul className="divide-y divide-g4">
         {items.map((p) => (
-          <li key={p.id}><Link to={`/story/${p.id}/review`} className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px] hover:bg-g2">
+          <li key={p.id} className="flex items-center gap-3 pr-4 hover:bg-g2"><Link to={`/story/${p.id}/render`} className="flex min-w-0 flex-1 items-center justify-between gap-3 py-2.5 pl-4 text-[13px]">
             <span className="min-w-0 truncate">{p.headline}</span>
             <span className="shrink-0 text-[12px] text-g8">{p.format === "vo_only" ? "No anchor" : "Anchor"}{p.posts?.youtube?.state === "failed" ? " · post failed" : ""}</span>
-          </Link></li>
+          </Link><FinishedActions p={p} compact /></li>
         ))}
       </ul>
       <Dialog open={open} onOpenChange={setOpen} title={`Post ${items.length} ${items.length === 1 ? "video" : "videos"}?`}>

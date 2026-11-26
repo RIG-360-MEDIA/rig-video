@@ -618,6 +618,10 @@ async function savePicks() { await act(api("/api/prefs", { method: "PUT", json: 
 export const hidePick = (pid: Id) => { set((d) => { d.hiddenPicks.push(pid); }); void savePicks(); };
 export const showHiddenPicks = () => { set((d) => { d.hiddenPicks = []; }); void savePicks(); };
 export const setDefaults = (patch: Partial<Defaults>) => { set((d) => { Object.assign(d.defaults, patch); }); savePrefs(); };
+/** A rendered story opened again: its video is dropped; back to Review (now: straight back into the render queue). */
+export function remakeStory(id: Id, now: boolean) {
+  return act(post<Project>(`/api/projects/${id}/remake`, { now })).then((p) => { took(p); void poll(); return !!p; });
+}
 export function archiveProject(id: Id) {
   void act(post(`/api/projects/${id}/archive`)).then((ok) => { if (ok) set((d) => { d.order = d.order.filter((x) => x !== id); }); });
 }

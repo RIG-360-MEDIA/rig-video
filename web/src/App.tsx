@@ -10,6 +10,7 @@ const Desk = lazy(() => import("@/pages/Desk"));
 const ScriptPage = lazy(() => import("@/pages/Script"));
 const VisualsPage = lazy(() => import("@/pages/Visuals"));
 const ReviewPage = lazy(() => import("@/pages/Review"));
+const RenderPage = lazy(() => import("@/pages/Render"));
 const Library = lazy(() => import("@/pages/Library"));
 const Anchors = lazy(() => import("@/pages/Anchors"));
 const Settings = lazy(() => import("@/pages/Settings"));
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="script" element={<ScriptPage />} />
               <Route path="visuals" element={<VisualsPage />} />
               <Route path="review" element={<ReviewPage />} />
+              <Route path="render" element={<RenderPage />} />
               <Route path="*" element={<Navigate to="script" replace />} />
             </Route>
             <Route path="/library" element={<Signed><Page><Library /></Page></Signed>} />

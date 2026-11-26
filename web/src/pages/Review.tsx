@@ -9,6 +9,7 @@ import { useProject } from "@/components/story";
 import { RoughCutPlayer, buildCut, buildVoCut, PhonePlayer, type CutSeg, type VoSeg } from "@/components/player";
 import { Button, Dialog, Input, Switch, Textarea, Tip, cx, istTime, mmss } from "@/components/ui";
 import { Graphics, AnchorPicker, VoiceSample } from "./Script";
+import { FinishedCard } from "./Render";
 
 const RENDER_MIN_PER_SEC = 0.23; // render machine: about 14 s of GPU time per second of video
 
@@ -71,6 +72,7 @@ export default function ReviewPage() {
         <aside className="space-y-8 xl:sticky xl:top-[72px] xl:self-start">
           {vo || done ? <PostCard p={p} voicing={voicing.length} short={short.length} total={total} />
             : <RenderCard p={p} ready={ready} locked={locked} voicing={voicing.length} short={short.length} estMin={estMin} ahead={ahead} total={total} onRender={() => setConfirm(true)} />}
+          {p.stage === "done" && <FinishedCard p={p} />}
           <AnchorBox p={p} locked={locked} />
           {!vo && <section aria-labelledby="out-h">
             <h2 id="out-h" className="text-[15px] font-semibold">Extras on the final video</h2>
@@ -309,8 +311,8 @@ function RenderCard({ p, ready, locked, voicing, short, estMin, ahead, total, on
       <div className="flex items-baseline justify-between"><h2 className="text-[15px] font-semibold">Render</h2><span className="edge text-[13px]">{mmss(total)}</span></div>
       {locked ? (
         <div className="mt-4 space-y-3 text-[13.5px]">
-          <p className="flex items-center gap-2 text-g9"><Lock size={15} />{p.stage === "done" ? "Rendered. This story is in the library." : p.render?.waitNote ? `Queued for tonight's render. ${p.render.waitNote}.` : `On the render machine, ${p.render?.percent ?? 0}% done.`}</p>
-          <Button kind="secondary" className="w-full" onClick={() => nav(p.stage === "done" ? "/library" : "/desk")}>{p.stage === "done" ? "Open the library" : "Back to the desk"}</Button>
+          <p className="flex items-center gap-2 text-g9"><Lock size={15} />{p.stage === "done" ? "Rendered. Post it, make it again or discard it on the Render page." : p.render?.waitNote ? `Queued for tonight's render. ${p.render.waitNote}.` : `On the render machine, ${p.render?.percent ?? 0}% done.`}</p>
+          <Button kind="secondary" className="w-full" onClick={() => nav(p.stage === "done" ? `/story/${p.id}/render` : "/desk")}>{p.stage === "done" ? "Open the Render page" : "Back to the desk"}</Button>
         </div>
       ) : (
         <>
@@ -351,7 +353,7 @@ function Check({ ok, children }: { ok: boolean; children: React.ReactNode }) {
 
 // ------------------------------------------------------------------ VO only: the final video and posting it
 
-function FinalPlayer({ src, poster, time, onTime, width = 300 }: { src: string; poster?: string; time?: { t: number; nonce: number }; onTime?: (t: number) => void; width?: number }) {
+export function FinalPlayer({ src, poster, time, onTime, width = 300 }: { src: string; poster?: string; time?: { t: number; nonce: number }; onTime?: (t: number) => void; width?: number }) {
   const v = useRef<HTMLVideoElement>(null);
   useEffect(() => { if (time && v.current) v.current.currentTime = time.t; }, [time?.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
@@ -364,7 +366,7 @@ function FinalPlayer({ src, poster, time, onTime, width = 300 }: { src: string; 
 
 const ACCOUNTS: { id: string; name: string }[] = [{ id: "instagram", name: "Instagram" }, { id: "facebook", name: "Facebook" }, { id: "x", name: "X" }];
 
-function PostCard({ p, voicing, short, total }: { p: Project; voicing: number; short: number; total: number }) {
+export function PostCard({ p, voicing, short, total }: { p: Project; voicing: number; short: number; total: number }) {
   const [open, setOpen] = useState(false);
   const f = p.final;
   const yt = p.posts?.youtube;
