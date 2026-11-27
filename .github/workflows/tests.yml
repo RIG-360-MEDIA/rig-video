@@ -1,0 +1,153 @@
+# The gate every change passes before it can merge into main (required by the ruleset on main). GitHub's runners only:
+# no secrets, no access to the office machines, nothing installed anywhere.
+#
+# On a pull request into main (pull_request_target):
+#   - this workflow file AND the tests come from main, not from the pull request. The code under test comes from the
+#     pull request. So a pull request cannot change, skip or weaken the tests that judge it: "static checks",
+#     "python tests" and "browser tests" are main's own tests run against the new code (regression: nothing that
+#     worked may break).
+#   - "PR's own tests" runs the pull request's version of the tests (the new feature's new tests).
+#   - "tests added": code changed with no test changed fails, unless the PR has the label no-test-needed.
+#   The ruleset also requires the branch to be up to date with main, so what is tested is what lands.
+# On a push to any branch: the branch's own tests, named "branch: ..." (prove a fix on its branch before the PR; they
+# never count for merging). On a push to main: main's tests on the merged commit, which release.yml checks.
+# Safety: the pull request's code runs with a read-only token and no secrets; no caches are used (no poisoning).
+name: tests
+on:
+  push:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: tests-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  PR: ${{ github.event_name == 'pull_request_target' }}
+  CODE: ${{ github.event.pull_request.head.sha || github.sha }}
+  MAIN: ${{ github.event.pull_request.base.sha }}
+
+jobs:
+  static:
+    name: "${{ (github.event_name == 'pull_request_target' || github.ref == 'refs/heads/main') && 'static checks' || 'branch: static checks' }}"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ env.CODE }}", persist-credentials: false }
+      - uses: actions/checkout@v4
+        if: env.PR == 'true'
+        with: { ref: "${{ env.MAIN }}", path: .main, persist-credentials: false }
+      - name: use main's tests
+        if: env.PR == 'true'
+        run: |
+          if [ -d .main/tests ]; then rm -rf tests pytest.ini && cp -r .main/tests .main/pytest.ini . ; else echo "::warning::main has no tests yet (first PR)"; fi
+          rm -rf .main
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: tests/ci.sh static
+
+  python:
+    name: "${{ (github.event_name == 'pull_request_target' || github.ref == 'refs/heads/main') && 'python tests' || 'branch: python tests' }}"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: ci, POSTGRES_USER: ci, POSTGRES_DB: ci }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      RIGVIDEO_TEST_PG: postgresql://ci@127.0.0.1:5432/ci        # throwaway database inside this job
+      PGPASSWORD: ci
+      RV_REGRESSION: ${{ github.event_name == 'pull_request_target' && '1' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ env.CODE }}", persist-credentials: false }
+      - uses: actions/checkout@v4
+        if: env.PR == 'true'
+        with: { ref: "${{ env.MAIN }}", path: .main, persist-credentials: false }
+      - name: use main's tests
+        if: env.PR == 'true'
+        run: |
+          if [ -d .main/tests ]; then rm -rf tests pytest.ini && cp -r .main/tests .main/pytest.ini . ; else echo "::warning::main has no tests yet (first PR)"; fi
+          rm -rf .main
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r tests/requirements.txt
+      - run: tests/ci.sh python
+
+  browser:
+    name: "${{ (github.event_name == 'pull_request_target' || github.ref == 'refs/heads/main') && 'browser tests' || 'branch: browser tests' }}"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ env.CODE }}", persist-credentials: false }
+      - uses: actions/checkout@v4
+        if: env.PR == 'true'
+        with: { ref: "${{ env.MAIN }}", path: .main, persist-credentials: false }
+      - name: use main's tests
+        if: env.PR == 'true'
+        run: |
+          if [ -d .main/tests ]; then rm -rf tests pytest.ini && cp -r .main/tests .main/pytest.ini . ; else echo "::warning::main has no tests yet (first PR)"; fi
+          rm -rf .main
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install -r tests/requirements.txt
+      - run: tests/ci.sh browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: browser-traces, path: tests/e2e/test-results, retention-days: 7 }
+
+  own:
+    name: PR's own tests
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: ci, POSTGRES_USER: ci, POSTGRES_DB: ci }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      RIGVIDEO_TEST_PG: postgresql://ci@127.0.0.1:5432/ci
+      PGPASSWORD: ci
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ env.CODE }}", persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install -r tests/requirements.txt
+      - run: tests/ci.sh python
+      - run: tests/ci.sh browser
+
+  added:
+    name: tests added
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: code changes come with test changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
+          code=$(echo "$files" | grep -E '^(server|studio-app|web/src|vertical|footage|db)/' | grep -vE '\.(md|txt)$' || true)
+          tests=$(echo "$files" | grep -E '^tests/' || true)
+          if [ -z "$code" ]; then echo "no code changed"; exit 0; fi
+          if [ -n "$tests" ]; then echo "code and tests changed:"; echo "$tests"; exit 0; fi
+          if echo ",$LABELS," | grep -q ',no-test-needed,'; then
+            echo "::warning::code changed with no test change; allowed by the label no-test-needed"; exit 0; fi
+          echo "::error::This PR changes code but no test. Add or update a test in tests/, or add the label no-test-needed."
+          echo "$code"; exit 1

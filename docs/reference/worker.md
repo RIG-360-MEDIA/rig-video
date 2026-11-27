@@ -872,4 +872,4 @@ written, so the job loop tries again after 30 min. What `select` does is in HAND
 - `asked` for Slower, "Less flat. Faster", a respelling, and "Pause before the last line";
 - `retry_lines` respelling "Hmielek" → "Chmielek", dropping the rare word, and returning nothing when there is no rare word.
 
-`server/test_event_date.py` imports the worker and tests `event_query` and `first_reported`.
+`tests/test_worker.py` tests `event_query`, `first_reported` and `stated_date` (see `docs/TESTING.md`).

@@ -581,42 +581,43 @@ says which.
 
 ## 13. Shipping changes: CI/CD and releases
 
-```mermaid
-flowchart LR
-  B[branch + PR] --> C{check<br/>on t7 runner}
-  C -- pass --> M[merge to main]
-  M --> R[publish GitHub Release vX.Y.Z]
-  R --> RC{check again}
-  RC --> D[deploy.sh: t3, t8, t7]
-  D --> H{/api/health<br/>= new version?}
-  H -- yes --> L[live; recorded as last good]
-  H -- no --> RB[re-install last good release<br/>run fails, GitHub emails]
-```
+**Read [`docs/TESTING.md`](TESTING.md) first.** In short:
 
-- **Runner:** a GitHub Actions *self-hosted* runner on t7 (`~/actions-runner`, unit `actions-runner.service`, labels
-  `self-hosted, rig-video`). It is the only CI machine that can reach the three machines.
-  **Pull requests from forks never run on it** (the repo is public; see `ci.yml`).
-- **`check` (every push and same-repo PR, `deploy/check.sh`):** secret scan; all Python compiles; server self-tests (restart resume,
-  search pipelining, writer busy, event date, store, worker); shell syntax; site type-check and build. **Nothing goes live.**
-- **`release` (a published GitHub Release):** only tags on `main`. It runs `check` again, then `deploy/deploy.sh <tag>`, which:
-  1. backs up the current t7 code to `~/.local/state/rig-video/backups/` (last 20);
-  2. installs t3's files, t8's files (through a key forced to `~/vision/deploy_recv.sh`), and t7's files;
-  3. enables the boot units;
-  4. restarts only what changed. The API restart does not kill running jobs (`KillMode=process`).
-  The API must then answer `/api/health` with the new version. If not, the **last good release is installed again**.
-- **`doctor` (07:30 and 23:30 daily):** `ops/doctor.py`.
+1. **Branch.** Work on a branch; every push runs that branch's tests on GitHub.
+2. **Pull request into `main`.** CI on GitHub's own runners runs **main's** regression suite against the new code,
+   then the PR's own tests:
+   - about 250 API, logic and flow tests;
+   - about 10 browser journeys;
+   - static checks and database migrations.
 
-**To ship:**
-1. Branch off `main` and open a PR; wait for `check`.
-2. Merge.
-3. Releases → *Draft a new release* → new tag `vX.Y.Z` on `main` → *Publish*.
-4. Watch Actions → `release`.
+   The workflow file and the tests come from `main`, so a PR cannot change the tests that judge it.
+3. **Merge.** The ruleset on `main` allows merging only when every check passes and the branch is up to date. Nobody can
+   push straight to `main` or force-push.
+4. **Release.** Publish a Release `vX.Y.Z` on `main`. The release job installs it only if that commit passed the tests
+   on GitHub. It then runs `deploy/deploy.sh` (t3, t8, t7), checks `/api/health`, and rolls back by itself if that
+   check fails.
 
-**To roll back:** Actions → `release` → *Run workflow* → enter the older tag. If the API itself is broken, the manual way back is to untar the newest
-`~/.local/state/rig-video/backups/*.tgz` over `$HOME` on t7, then run `systemctl --user restart rigvideo-api`.
+- **Runner:** a self-hosted GitHub Actions runner on t7 (`~/actions-runner`, unit `actions-runner.service`). It runs
+  only `release` and `doctor`. **No pull request or branch code runs on t7.**
+- **`deploy/check.sh`** runs on t7 before every install. It covers: secrets, Python compiles with t7's Python, shell
+  syntax, and the site build that deploy copies.
+- **`deploy.sh <tag>`:**
+  - backs up t7's code to `~/.local/state/rig-video/backups/` (the last 20);
+  - installs t3, t8 and t7;
+  - enables the boot units;
+  - restarts only what changed (`KillMode=process` keeps running jobs alive).
+- **`doctor`** runs `ops/doctor.py` at 07:30 and 23:30 daily.
 
-`deploy.sh` only adds and updates files on the machines and never deletes. Media, models and `node_modules` there are
-left untouched.
+**Database changes** are versioned migrations in `db/migrations/` with an undo for each (`db/README.md`). Never change a
+database by hand.
+
+**To roll back:**
+- Usually: Actions → `release` → *Run workflow* → enter the older tag.
+- If the API itself is broken: untar the newest `~/.local/state/rig-video/backups/*.tgz` over `$HOME` on t7, then run
+  `systemctl --user restart rigvideo-api`.
+
+`deploy.sh` only adds and updates files on the machines and never deletes. Media, models and `node_modules` there
+are left untouched.
 
 ---
 
@@ -682,7 +683,7 @@ while signed in.
 10. **Never change the anchor render recipe casually.** The recipe (`build_main.py` "t8k"), the 328-frame shots, the fixed vetted seeds and "each appearance renders on its own" were found by long testing. Wrong seeds cause visible drift in the last shot.
 
 **Always:**
-1. **Ship through a release** (section 13). Don't copy files onto the machines by hand; the next release would overwrite them anyway.
+1. **Ship through a pull request and a release** (section 13, `docs/TESTING.md`): every change comes with tests, and the full suite passes on the PR. Don't copy files onto the machines by hand; the next release would overwrite them anyway.
 2. **Keep the main path working before adding fallbacks.** For example, the t3 writer is the path and Groq only covers t3 being down; the t7 vision model is the path and t8 is its backup.
 3. **Report times in IST.** Logs are UTC.
 4. **Diagnose the cause before acting.** Every step writes its reason to the story's `log.txt`.

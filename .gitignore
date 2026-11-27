@@ -13,3 +13,6 @@ web/.impeccable/build
 .env.*
 !*.env.example
 *.key
+/dist/
+tests/e2e/test-results/
+tests/e2e/playwright-report/

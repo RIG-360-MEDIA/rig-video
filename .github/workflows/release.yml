@@ -10,6 +10,9 @@ on:
     inputs:
       tag: { description: "release tag to install (rollback = an older tag)", required: true }
 concurrency: { group: deploy, cancel-in-progress: false }
+permissions:
+  contents: read
+  checks: read
 jobs:
   deploy:
     runs-on: [self-hosted, rig-video]
@@ -21,6 +24,16 @@ jobs:
         with: { ref: "${{ env.TAG }}", fetch-depth: 0 }
       - name: only releases of main
         run: git merge-base --is-ancestor "$TAG" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+      - name: only a commit that passed the tests on GitHub
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          sha=$(git rev-parse "$TAG^{commit}")
+          for check in "static checks" "python tests" "browser tests"; do
+            ok=$(gh api "repos/${{ github.repository }}/commits/$sha/check-runs?per_page=100" \
+                 --jq "[.check_runs[] | select(.name == \"$check\" and .app.slug == \"github-actions\")] | (length > 0 and all(.conclusion == \"success\"))")
+            [ "$ok" = "true" ] || { echo "::error::$TAG ($sha): \"$check\" has not passed on GitHub; it is not installed"; exit 1; }
+          done
+          echo "all tests passed on $sha"
       - name: check
         run: deploy/check.sh
       - name: install

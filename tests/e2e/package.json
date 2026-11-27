@@ -1,0 +1,8 @@
+{
+  "name": "rig-video-e2e",
+  "private": true,
+  "description": "Browser tests of the RIG-Video site (Playwright). Run from tests/e2e: npm ci && npx playwright test",
+  "devDependencies": {
+    "@playwright/test": "1.57.0"
+  }
+}
