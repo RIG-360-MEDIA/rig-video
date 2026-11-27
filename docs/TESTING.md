@@ -13,7 +13,7 @@ all passing.
 
    | Check | What it runs | Why |
    |---|---|---|
-   | `static checks` | secrets scan, Python compiles, shell syntax, site type-check and build | the basics |
+   | `static checks` | secrets scan, Python compiles, shell syntax, site type-check and build, by main's `tests/ci.sh` over the PR's whole tree (its new test files too) | the basics |
    | `python tests` | **main's** pytest suite against the PR's code, plus migrations on a throwaway Postgres | nothing that worked may break |
    | `browser tests` | **main's** browser journeys (Playwright) against the PR's code | the site still works for editors |
    | `PR's own tests` | the PR's version of the tests (new tests for the new feature) | the new feature works |
