@@ -40,10 +40,11 @@ jobs:
       - uses: actions/checkout@v4
         if: env.PR == 'true'
         with: { ref: "${{ env.MAIN }}", path: .main, persist-credentials: false }
-      - name: use main's tests
+      - name: use main's checks
         if: env.PR == 'true'
+        # only main's ci.sh: the pull request's whole tree, its new test files too, is what gets scanned and compiled
         run: |
-          if [ -d .main/tests ]; then rm -rf tests pytest.ini && cp -r .main/tests .main/pytest.ini . ; else echo "::warning::main has no tests yet (first PR)"; fi
+          mkdir -p tests && cp .main/tests/ci.sh tests/ci.sh
           rm -rf .main
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
