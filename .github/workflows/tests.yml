@@ -62,7 +62,8 @@ jobs:
         ports: ["5432:5432"]
         options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      RIGVIDEO_TEST_PG: postgresql://ci:ci@127.0.0.1:5432/ci     # throwaway database inside this job
+      RIGVIDEO_TEST_PG: postgresql://ci@127.0.0.1:5432/ci        # throwaway database inside this job
+      PGPASSWORD: ci
       RV_REGRESSION: ${{ github.event_name == 'pull_request_target' && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +118,8 @@ jobs:
         ports: ["5432:5432"]
         options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      RIGVIDEO_TEST_PG: postgresql://ci:ci@127.0.0.1:5432/ci
+      RIGVIDEO_TEST_PG: postgresql://ci@127.0.0.1:5432/ci
+      PGPASSWORD: ci
     steps:
       - uses: actions/checkout@v4
         with: { ref: "${{ env.CODE }}", persist-credentials: false }
