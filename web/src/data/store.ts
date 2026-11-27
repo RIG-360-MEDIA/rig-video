@@ -615,6 +615,26 @@ export const frameCode = (roll: number, frame: number) => `R${roll.toString().pa
 function savePrefs() { void act(api("/api/prefs", { method: "PUT", json: { defaults: state.defaults, hiddenPicks: state.hiddenPicks } })); }
 /** Remove a pick from the list: the server leaves it out and fills its place from the day's reserves. */
 async function savePicks() { await act(api("/api/prefs", { method: "PUT", json: { defaults: state.defaults, hiddenPicks: state.hiddenPicks } })); void poll(); }
+/** Desk: a story of your own into today's picks (a link, pasted text or a file). Before 08:00 it waits for the daily run;
+ *  after, it starts at once. Returns the new story's id when it started, "" when it waits, null when refused. */
+export async function addOwnPick(input: { text: string; file?: File }): Promise<Id | "" | null> {
+  const t = input.text.trim();
+  let r: { started: Id | null } | null;
+  if (input.file && !t) {
+    const fd = new FormData();
+    fd.append("file", input.file);
+    r = await act(api<{ started: Id | null }>("/api/picks/file", { method: "POST", body: fd }));
+  } else {
+    r = await act(post<{ started: Id | null }>("/api/picks", /^https?:\/\/\S+$/.test(t) ? { kind: "link", url: t } : { kind: "text", text: t }));
+  }
+  if (!r) return null;
+  try { apply(await api<Desk>("/api/desk")); } catch { /* the next poll has it */ }
+  return r.started ?? "";
+}
+export async function removeOwnPick(pid: Id) {
+  if (!(await act(api<{ ok: boolean }>(`/api/picks/${pid}`, { method: "DELETE" })))) return;
+  set((d) => { d.picks = d.picks.filter((x) => x.id !== pid); });
+}
 export const hidePick = (pid: Id) => { set((d) => { d.hiddenPicks.push(pid); }); void savePicks(); };
 export const showHiddenPicks = () => { set((d) => { d.hiddenPicks = []; }); void savePicks(); };
 export const setDefaults = (patch: Partial<Defaults>) => { set((d) => { Object.assign(d.defaults, patch); }); savePrefs(); };

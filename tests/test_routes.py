@@ -22,7 +22,7 @@ SIGNED_IN = {
     ("POST", "/api/projects/{pid}/final"), ("GET", "/api/projects/{pid}/post"), ("POST", "/api/projects/{pid}/post"),
     ("POST", "/api/post-all"), ("POST", "/api/projects/{pid}/cancel"), ("POST", "/api/projects/{pid}/moveup"),
     ("POST", "/api/projects/{pid}/remake"), ("POST", "/api/projects/{pid}/archive"), ("POST", "/api/library/{item}/duplicate"),
-    ("GET", "/files/{pid}/{rel:path}"),
+    ("GET", "/files/{pid}/{rel:path}"), ("POST", "/api/picks"), ("POST", "/api/picks/file"), ("DELETE", "/api/picks/{pick}"),
 }
 SITE = {("GET", "/{path:path}")}                                    # the built site (only when web/dist was built)
 DOCS = {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}
@@ -53,7 +53,7 @@ def fill(path, pid="floods-hit-kathmandu-1234"):
 
 
 def call(c, method, path, **kw):
-    if path.endswith(("/uploads", "/maps", "/projects/file")):
+    if path.endswith(("/uploads", "/maps", "/projects/file", "/picks/file")):
         return c.request(method, path, data={"sid": "b1", "seconds": "60"}, files={"file": ("a.jpg", b"x", "image/jpeg")})
     return c.request(method, path, json={}, **kw) if method in ("POST", "PUT") else c.request(method, path)
 

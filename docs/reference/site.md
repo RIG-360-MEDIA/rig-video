@@ -440,6 +440,14 @@ render queue, needs you, just finished.
 - **Remove** → `hidePick`; the server refills the list from the day's reserves. **Bring back N removed** →
   `showHiddenPicks`.
 - Empty states: "still being chosen" (no picks) or "every pick is in use or removed".
+- **Add your own** (2026-11-28): a dialog with a link or the article text, or a PDF/Word/text file →
+  `addOwnPick` → `POST /api/picks` (`/api/picks/file`).
+  - The pick shows for everyone on the desk as a card tagged **Yours**, with "Added by …".
+  - **Added before the daily run (08:00):** it says "Starts with the daily run" and starts with it.
+  - **Added after 08:00:** it starts at once and opens its Script page.
+  - Either way it runs the daily pipeline: 1-minute VO only, the script approved by itself, then voice, footage and the
+    clip check. The editor then checks the footage and it renders overnight.
+  - **Remove** on an own pick deletes it for everyone (`DELETE /api/picks/{id}`) until it has become a story.
 
 **In progress**: stories at stage script/visuals/review, in server order. Each row: headline, anchor face and name,
 estimated length / target, last edit time, up to 4 thumbnails (VO: first cuts' posters), a status tag
@@ -458,7 +466,7 @@ others "#n". Line 2: `waitNote`, else "putting it together" (assembling), "done 
 **Needs you**: links built from the stories: render held/failed (with `heldReason`), "Voice ready. Listen before
 rendering." (stage review, no voice busy), "n parts need pictures" (visuals), "Script written. Check and approve it."
 
-**Just finished**: the newest 3 library items; click opens a dialog playing `video`, or a rough cut / phone preview of
+**Just finished** (its player also has Remake / Discard for a finished story): the newest 3 library items; click opens a dialog playing `video`, or a rough cut / phone preview of
 the project if there is no file.
 
 ### 6.4 Script (`/story/<id>/script`, `pages/Script.tsx`)

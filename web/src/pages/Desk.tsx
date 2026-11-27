@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState, type DragEvent } from "react";
 import { useNavigate, Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { FileText, LinkSimple, UploadSimple, X, ArrowRight, Eye, Play, FilmStrip, Warning, Waveform, ImagesSquare, PencilSimpleLine, Clock, CaretUp, Trash, YoutubeLogo, PaperPlaneTilt } from "@phosphor-icons/react";
+import { FileText, LinkSimple, UploadSimple, X, ArrowRight, Eye, Play, FilmStrip, Warning, Waveform, ImagesSquare, PencilSimpleLine, Clock, CaretUp, Trash, YoutubeLogo, PaperPlaneTilt, Plus } from "@phosphor-icons/react";
 import {
-  useStore, createProject, parseLength, hidePick, showHiddenPicks, sections, fillOf, voiceProgress, anchorOf, cancelRender, moveUp, totalSeconds, mediaOf, archiveProject, awaitingPost, postAll,
+  useStore, createProject, parseLength, hidePick, showHiddenPicks, addOwnPick, removeOwnPick, toast, sections, fillOf, voiceProgress, anchorOf, cancelRender, moveUp, totalSeconds, mediaOf, archiveProject, awaitingPost, postAll,
 } from "@/data/store";
 import type { Format, Pick, Project } from "@/data/types";
 import { Button, Dialog, Ring, Segmented, Tag, Tip, cx, istTime, mmss, istDate, IconButton, useFormatOptions } from "@/components/ui";
@@ -145,6 +145,7 @@ function Picks({ format, seconds }: { format: Format; seconds: number | null }) 
   const picks = useStore((s) => s.picks);
   const hidden = useStore((s) => s.hiddenPicks);
   const visible = picks.filter((p) => !hidden.includes(p.id));
+  const [adding, setAdding] = useState(false);
   if (ws?.kind !== "dnl") return null;
   return (
     <section aria-labelledby="picks-h">
@@ -153,8 +154,10 @@ function Picks({ format, seconds }: { format: Format; seconds: number | null }) 
         <div className="flex items-center gap-4 text-[12.5px] text-g8">
           <span>DNL selection · hard news</span>
           {hidden.length > 0 && <button onClick={showHiddenPicks} className="flex items-center gap-1 hover:text-g10"><Eye size={14} />Bring back {hidden.length} removed</button>}
+          <Button kind="secondary" size="sm" icon={<Plus size={13} />} onClick={() => setAdding(true)}>Add your own</Button>
         </div>
       </div>
+      <AddPick open={adding} onClose={() => setAdding(false)} />
       {visible.length === 0 ? (
         <div className="rounded-md border border-dashed border-g5 px-5 py-8 text-center text-[13.5px] text-g8">{picks.length ? "Every pick is in use or removed. New picks arrive with the next selection." : "Today's picks are still being chosen. They appear here when ready."}</div>
       ) : (
@@ -163,6 +166,48 @@ function Picks({ format, seconds }: { format: Format; seconds: number | null }) 
         </div>
       )}
     </section>
+  );
+}
+
+/** Add a story of your own to today's picks: it runs through the daily pipeline like DNL's picks. */
+function AddPick({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const nav = useNavigate();
+  const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const daily = useStore((s) => s.workspace?.kind === "dnl");
+  async function add() {
+    if (busy || (!text.trim() && !file)) return;
+    setBusy(true);
+    const r = await addOwnPick({ text, file: file ?? undefined });
+    setBusy(false);
+    if (r === null) return;
+    setText(""); setFile(null); onClose();
+    if (r) { toast("Added. It is in the daily pipeline now: script, voice and footage, then it waits for you on Visuals.", "ok"); nav(`/story/${r}/script`); }
+    else toast("Added to today's picks. It starts with the daily run.", "ok");
+  }
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()} title="Add your own pick">
+      <div className="space-y-4 p-5 text-[14px]">
+        <p className="text-g8">It runs through the daily pipeline like DNL's picks: a 1-minute 9:16 video, script and voice made for you, footage found and checked. Added before 08:00 it starts with the daily run; after 08:00 it starts now. You check the footage, and it renders overnight.</p>
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-medium text-g9">Link or article text</span>
+          <textarea value={text} onChange={(e) => { setText(e.target.value); if (e.target.value) setFile(null); }} rows={5}
+            placeholder="Paste a link to the article, or the full article text" className="w-full rounded-sm border border-g5 bg-g0 px-3 py-2 text-[14px] outline-none focus-visible:border-g8" />
+        </label>
+        <div className="flex items-center gap-3 text-[13px] text-g8">
+          <span>or</span>
+          <Button kind="secondary" size="sm" icon={<UploadSimple size={14} />} onClick={() => input.current?.click()}>{file ? file.name : "Upload a file"}</Button>
+          <span>PDF, Word or text</span>
+          <input ref={input} type="file" accept=".pdf,.docx,.txt,.md" className="hidden" aria-label="Article file" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setText(""); }} />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button kind="ghost" onClick={onClose}>Cancel</Button>
+          <Button kind="primary" disabled={busy || !daily || (!text.trim() && !file)} onClick={() => void add()}>{busy ? "Adding…" : "Add to today's picks"}</Button>
+        </div>
+      </div>
+    </Dialog>
   );
 }
 
@@ -183,15 +228,16 @@ function PickCard({ p, i, format, seconds }: { p: Pick; i: number; format: Forma
       <h3 className="text-[15px] leading-snug font-semibold text-g10">{p.headline}</h3>
       <p className="mt-1.5 line-clamp-3 text-[13px] text-g8">{p.deck}</p>
       <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-g8">
-        <Tag tone="marker">{TYPE[p.type] ?? "News"}</Tag>
+        {p.own ? <Tag tone="vo">Yours</Tag> : <Tag tone="marker">{TYPE[p.type] ?? "News"}</Tag>}
         {p.place && <span className="font-mono">{p.place}</span>}
         <span className="text-g6">·</span><span className="edge">{istDate(p.publishedAt)}, {istTime(p.publishedAt)} IST</span>
         <span className="text-g6">·</span><span className="edge">{p.source}</span>
       </div>
+      {p.waiting && <p className="mt-2 flex items-center gap-1.5 text-[12.5px] text-g8"><Clock size={13} />{p.waiting}</p>}
       <div className="mt-auto flex items-center gap-2 pt-4">
         <Button kind="secondary" size="sm" disabled={busy || !seconds} onClick={() => use()}>{busy ? "Starting…" : "Use this story"}</Button>
         {format !== "vo_only" && formats.includes("vo_only") && <Button kind="secondary" size="sm" disabled={busy || !seconds} onClick={() => use("vo_only")}>Make 9:16</Button>}
-        <Button kind="quiet" size="sm" icon={<X size={14} />} onClick={() => hidePick(p.id)}>Remove</Button>
+        <Button kind="quiet" size="sm" icon={<X size={14} />} onClick={() => (p.own ? void removeOwnPick(p.id) : hidePick(p.id))}>Remove</Button>
       </div>
     </motion.article>
   );
@@ -431,6 +477,8 @@ function JustFinished() {
           : it.projectId && projects[it.projectId] ? (projects[it.projectId].format === "vo_only"
             ? <div className="flex justify-center bg-g0 py-5"><PhonePlayer p={projects[it.projectId]} autoPlay width={280} /></div>
             : <div className="mx-auto w-full max-w-[calc(66dvh*16/9)]"><RoughCutPlayer p={projects[it.projectId]} autoPlay /></div>) : null)}
+        {it?.projectId && projects[it.projectId]?.stage === "done" && (
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-g4 px-5 py-3.5"><FinishedActions p={projects[it.projectId]} compact /></div>)}
       </Dialog>
     </section>
   );

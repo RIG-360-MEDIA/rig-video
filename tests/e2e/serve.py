@@ -10,6 +10,7 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 os.environ["STUDIO_DATA"] = tempfile.mkdtemp(prefix="rv-e2e-")
 os.environ["ANCHOR_TOOLS_PY"] = "/bin/false"
+os.environ["RIGVIDEO_DAILY_AT"] = "23:59"          # own picks added in the tests wait for the daily run (deterministic)
 sys.path.insert(0, str(HERE.parent))
 import conftest as c  # noqa: E402  (sets the safe environment, then imports the app)
 import store  # noqa: E402

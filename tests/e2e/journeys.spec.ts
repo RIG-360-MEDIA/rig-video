@@ -99,11 +99,38 @@ test("Discard: the video leaves the desk and the library", async ({ page }) => {
   expect(desk.library.map((x: { id: string }) => x.id)).not.toContain(`lib-${id}`);
 });
 
-test("the library lists finished videos", async ({ page }) => {
+test("the library lists finished videos; a public one cannot be remade from there", async ({ page }) => {
   await signIn(page);
   await page.goto("/library");
   await expect(page.getByRole("heading", { name: "Library" })).toBeVisible();
-  await expect(page.getByText("Already public story").first()).toBeVisible();
+  await page.getByText("Already public story").first().click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("button", { name: "Remake" })).toBeDisabled();
+  await expect(dialog.getByRole("button", { name: "Discard" })).toBeDisabled();
+});
+
+test("add your own pick: it waits on the desk for the daily run, and can be removed", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Add your own" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Link or article text").fill("https://example.com/news/dam-burst-floods-libyan-town");
+  await dialog.getByRole("button", { name: "Add to today's picks" }).click();
+  const card = page.getByRole("article").filter({ hasText: "dam burst floods libyan town" });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("Yours");
+  await expect(card).toContainText("Starts with the daily run");
+  await card.getByRole("button", { name: "Remove" }).click();
+  await expect(card).toHaveCount(0);
+  const desk = await (await page.request.get("/api/desk")).json();
+  expect(desk.picks.filter((p: { own?: boolean }) => p.own)).toHaveLength(0);
+});
+
+test("a too-short own pick is refused with a message", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Add your own" }).click();
+  await page.getByRole("dialog").getByLabel("Link or article text").fill("Too short to be an article.");
+  await page.getByRole("dialog").getByRole("button", { name: "Add to today's picks" }).click();
+  await expect(page.getByText("too short to be an article")).toBeVisible();
 });
 
 test("sign out ends the session", async ({ page }) => {
