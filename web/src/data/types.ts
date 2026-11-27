@@ -22,6 +22,7 @@ export interface Anchor {
 export interface Pick {
   id: Id; headline: string; deck: string; type: StoryType; place: string;
   source: string; url: string; publishedAt: string;
+  own?: boolean; addedBy?: string; waiting?: string;              // added by an editor on the Desk; waiting: before the 08:00 run
 }
 export type StoryType = "war_conflict" | "death_disaster" | "democracy" | "turmoil_unrest";
 

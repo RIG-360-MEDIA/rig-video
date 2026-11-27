@@ -6,6 +6,7 @@ import { useStore, duplicateFromLibrary, anchorOf, toast } from "@/data/store";
 import type { LibraryItem } from "@/data/types";
 import { PhonePlayer, RoughCutPlayer, VideoPlayer } from "@/components/player";
 import { Button, Dialog, Empty, Segmented, Tag, Tip, cx, istDate, mmss } from "@/components/ui";
+import { FinishedActions } from "./Render";
 
 type Sort = "new" | "old" | "long";
 
@@ -119,6 +120,7 @@ function Player({ it, onClose }: { it?: LibraryItem; onClose: () => void }) {
             ) : <Tip label="The rough cut has no file yet. The render machine makes the file."><span><Button kind="secondary" size="sm" disabled icon={<DownloadSimple size={15} />}>Download</Button></span></Tip>}
             {p ? <Button kind="secondary" size="sm" icon={<CopySimple size={15} />} onClick={again}>Make another from this</Button>
               : <Tip label="Made before the studio kept its stories, so there is nothing to copy."><span><Button kind="secondary" size="sm" disabled icon={<CopySimple size={15} />}>Make another from this</Button></span></Tip>}
+            {p?.stage === "done" && <FinishedActions p={p} compact />}
           </div>
         </div>
       )}

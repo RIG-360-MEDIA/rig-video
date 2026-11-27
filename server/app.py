@@ -268,6 +268,7 @@ def desk(u=Depends(user)):
     pr = store.prefs(u["id"])
     n = sum(not x.get("reserve") for x in picks)                    # as many cards as the day's picks: one used or removed
     picks = [x for x in picks if x["id"] not in used and x["id"] not in pr["hiddenPicks"]][:n]   # is replaced by the next reserve
+    picks += [view_pick(x) for x in own_picks(u["workspaceId"]) if x["id"] not in used]           # the desk's own picks
     lib = sorted([p["_library"] for p in ps if p.get("_library")], key=lambda x: x["madeAt"], reverse=True)
     return {"user": {k: u[k] for k in ("id", "name", "email", "role", "workspaceId")}, "workspace": ws,
             "picks": picks, "hiddenPicks": pr["hiddenPicks"], "defaults": pr["defaults"],
@@ -312,11 +313,10 @@ def create(body: dict = Body(...), u=Depends(user)):
         raise HTTPException(400, "Choose a length between 20 seconds and 10 minutes.")
     url, place, headline = str(body.get("url") or "").strip(), "", ""
     if kind == "pick":
-        picks, bodies = selection()
-        pick = next((x for x in picks if x["id"] == body.get("pickId")), None)
-        if not pick or store.WORKSPACES[u["workspaceId"]]["kind"] != "dnl":
+        pick, text = find_pick(str(body.get("pickId") or ""), u["workspaceId"])
+        if not pick:
             raise HTTPException(404, "That story is no longer in today's selection.")
-        text, url, place, headline = bodies[pick["id"]], pick["url"], pick["place"], pick["headline"]
+        url, place, headline = pick["url"], pick["place"], pick["headline"]
     elif kind == "link":
         if not re.match(r"https?://", url):
             raise HTTPException(400, "That is not a link. Paste a link starting with http, or the article text.")
@@ -331,7 +331,7 @@ def create(body: dict = Body(...), u=Depends(user)):
     name = str(body.get("name") or "")
     headline = headline or (re.sub(r"\.(pdf|docx?|txt)$", "", name, flags=re.I).replace("_", " ") if name else
                             text.split("\n")[0][:90] if text else url.rstrip("/").rsplit("/", 1)[-1].replace("-", " ")[:90])
-    site = "DNL selection" if kind == "pick" else (re.sub(r"^www\.", "", url.split("/")[2]) if url else None)
+    site = ("DNL selection" if not pick.get("own") else source_site(url, pick)) if kind == "pick" else (re.sub(r"^www\.", "", url.split("/")[2]) if url else None)
     p = make_project(headline or "New story", {"kind": "link" if kind == "pick" else kind, "url": url or None, "name": name or None,
                                                "site": site, "text": text}, seconds, place, fmt, u["workspaceId"], u["id"],
                      {"_pick": pick["id"]} if kind == "pick" else {})
@@ -356,25 +356,139 @@ def daily_start(only=None):
     day = store.now().strftime("%Y-%m-%d")
     mark = store.DATA / "daily" / f"{day}.json"
     if only is None and (mark.exists() or not (store.DATA / "selection" / f"{day}.json").exists()):
-        return []
+        made = {p.get("_pick") for p in store.all_projects("dnl")}    # the desk's own picks never wait for DNL's selection
+        return [start_pick(x, x["text"], x["by"], day) for x in own_picks("dnl") if x["id"] not in made]
     owner = next((x for x in store.users() if x.get("workspaceId") == "dnl" and x.get("role") == "admin"), None) or \
         next(x for x in store.users() if x.get("workspaceId") == "dnl")
     made = {p.get("_pick") for p in store.all_projects("dnl")}
     picks, bodies = selection()
+    own = own_picks("dnl")
+    bodies.update({x["id"]: x["text"] for x in own})
     started = []
-    for x in picks:
+    for x in picks + own:
         if x["id"] in made or (x["id"] not in only if only is not None else x.get("reserve")):   # by hand: any pick
             continue
-        p = make_project(x["headline"], {"kind": "link", "url": x["url"], "name": None, "site": "DNL selection", "text": bodies[x["id"]]},
-                         60, x["place"], "vo_only", "dnl", owner["id"],
-                         {"_pick": x["id"], "_daily": day, "_autoApprove": True,
-                          "formatWhy": {"by": "auto", "text": "Daily run: starts with no anchor; the footage check decides.", "at": store.stamp()}})
-        spawn(p["id"], "write")
-        started.append(p["id"])
+        started.append(start_pick(x, bodies[x["id"]], x.get("by") or owner["id"], day))
     if only is None:
         mark.parent.mkdir(parents=True, exist_ok=True)
         mark.write_text(json.dumps({"at": store.stamp(), "projects": started}))
     return started
+
+
+def start_pick(x, text, uid, day):
+    """A pick becomes a daily-run story: 1-minute VO only, its script approved by itself once written; then voices,
+    footage search and clip check; editors take over on the footage page and it renders overnight like the rest."""
+    p = make_project(x["headline"], {"kind": "text" if x.get("own") and text else "link", "url": x["url"] or None, "name": x.get("name"),
+                                     "site": source_site(x["url"], x), "text": text},
+                     60, x["place"], "vo_only", "dnl", uid,
+                     {"_pick": x["id"], "_daily": day, "_autoApprove": True,
+                      "formatWhy": {"by": "auto", "text": "Daily run: starts with no anchor; the footage check decides.", "at": store.stamp()}})
+    spawn(p["id"], "write")
+    return p["id"]
+
+
+def source_site(url, pick):
+    if not pick.get("own"):
+        return "DNL selection"
+    return re.sub(r"^www\.", "", url.split("/")[2]) if url else "Added by an editor"
+
+
+# ------------------------------------------------------------------ the desk's own picks (2026-11-28)
+# An editor adds a story of their own to today's picks (a link, pasted text or a file). It runs through the daily
+# pipeline like DNL's picks: added before the daily run (08:00) it waits and starts with it; added later it starts
+# at once. Stored per pick in DATA/own_picks/<id>.json; a pick is today's only (the day it was added, IST).
+
+def own_picks(ws):
+    d, day = store.DATA / "own_picks", store.now().strftime("%Y-%m-%d")
+    out = []
+    for f in sorted(d.glob("own-*.json")) if d.exists() else []:
+        try:
+            x = json.loads(f.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if x.get("workspaceId") == ws and x.get("day") == day:
+            out.append(x)
+    return sorted(out, key=lambda x: x["at"])
+
+
+def find_pick(pid, ws):
+    """(pick, article text) for one of today's picks of this workspace (DNL's or the desk's own), else (None, "")."""
+    if store.WORKSPACES[ws]["kind"] == "dnl":
+        picks, bodies = selection()
+        x = next((x for x in picks if x["id"] == pid), None)
+        if x:
+            return x, bodies[x["id"]]
+    x = next((x for x in own_picks(ws) if x["id"] == pid), None)
+    return (x, x["text"]) if x else (None, "")
+
+
+def daily_done(day):
+    """The daily run has started today (its marker), or its time has passed: an own pick added now starts at once."""
+    return (store.DATA / "daily" / f"{day}.json").exists() or store.now().strftime("%H:%M") >= os.environ.get("RIGVIDEO_DAILY_AT", "08:00")
+
+
+def view_pick(x):
+    waits = not daily_done(x["day"])
+    return {k: x[k] for k in ("id", "headline", "deck", "type", "place", "source", "url", "publishedAt")} | \
+        {"own": True, "addedBy": x["byName"], **({"waiting": f"Starts with the daily run at {os.environ.get('RIGVIDEO_DAILY_AT', '08:00')} IST"} if waits else {})}
+
+
+def add_own_pick(kind, text, url, name, u):
+    if store.WORKSPACES[u["workspaceId"]]["kind"] != "dnl":
+        raise HTTPException(400, "Picks are part of the DNL daily run. Use New video instead.")
+    text, url = text.strip(), url.strip()
+    if kind == "link":
+        if not re.match(r"https?://", url):
+            raise HTTPException(400, "That is not a link. Paste a link starting with http, or the article text.")
+    elif kind in ("text", "file"):
+        if len(text.split()) < 40:
+            raise HTTPException(400, "That looks too short to be an article. Paste the full text or a link.")
+    else:
+        raise HTTPException(400, "Unknown source.")
+    if any(x["url"] and x["url"] == url for x in own_picks(u["workspaceId"])):
+        raise HTTPException(409, "That link is already in today's picks.")
+    day = store.now().strftime("%Y-%m-%d")
+    headline = (re.sub(r"\.(pdf|docx?|txt|md)$", "", name, flags=re.I).replace("_", " ") if name else
+                text.split("\n")[0][:90] if text else url.rstrip("/").rsplit("/", 1)[-1].replace("-", " ")[:90]) or "Your story"
+    x = {"id": "own-" + secrets.token_hex(4), "own": True, "workspaceId": u["workspaceId"], "day": day, "at": store.stamp(), "by": u["id"],
+         "byName": u.get("name") or u.get("email") or "an editor", "kind": kind, "headline": headline,
+         "deck": " ".join(text.split()[:40]) if text else url, "type": "", "place": "", "url": url,
+         "source": "Added by " + (u.get("name") or u.get("email") or "an editor"), "publishedAt": store.stamp(), "name": name or None,
+         "text": text[:40000]}
+    d = store.DATA / "own_picks"
+    d.mkdir(parents=True, exist_ok=True)
+    store._write(d / f"{x['id']}.json", x)
+    started = None
+    if daily_done(day):                                             # after 08:00: into the pipeline now
+        started = start_pick(x, x["text"], u["id"], day)
+    return {"pick": view_pick(x), "started": started}
+
+
+@app.post("/api/picks")
+def add_pick(body: dict = Body(...), u=Depends(user)):
+    """Desk: add a story of your own to today's picks ({kind: link|text, url|text})."""
+    return add_own_pick(str(body.get("kind") or ""), str(body.get("text") or ""), str(body.get("url") or ""), "", u)
+
+
+@app.post("/api/picks/file")
+def add_pick_file(file: UploadFile = File(...), u=Depends(user)):
+    data = file.file.read(20 * 2 ** 20 + 1)
+    if len(data) > 20 * 2 ** 20:
+        raise HTTPException(413, "That file is over 20 MB.")
+    text = re.sub(r"[ \t]+", " ", file_text(file.filename or "", data)).strip()[:40000]
+    return add_own_pick("file", text, "", file.filename or "", u)
+
+
+@app.delete("/api/picks/{pick}")
+def remove_pick(pick: str, u=Depends(user)):
+    """Take an own pick off today's picks (for everyone) before it has become a story."""
+    x = next((x for x in own_picks(u["workspaceId"]) if x["id"] == pick), None)
+    if not x:
+        raise HTTPException(404, "No such pick.")
+    if any(p.get("_pick") == pick for p in store.all_projects(u["workspaceId"])):
+        raise HTTPException(409, "That pick is already a story. Discard the story instead.")
+    (store.DATA / "own_picks" / f"{pick}.json").unlink()
+    return {"ok": True}
 
 
 @app.post("/api/daily/start")
