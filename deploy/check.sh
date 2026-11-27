@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The gate every change passes (CI on each push/PR, and again before a release is installed). Runs on trijya-7, where
-# the real interpreters live. Fails on: a secret in the tree, Python that does not compile, a failing self-test,
-# a shell script with a syntax error, or a site that does not type-check/build. Builds web/dist for deploy.sh.
+# the real interpreters live. Fails on: a secret in the tree, Python that does not compile (with trijya-7's own
+# Python), a shell script with a syntax error, or a site that does not type-check/build. Builds web/dist for deploy.sh.
 set -euo pipefail
 SRC=$(cd "$(dirname "$0")/.." && pwd); cd "$SRC"
 API_PY=${API_PY:-$HOME/anchor-studio/rigvideo-api-venv/bin/python}     # runs the API (app.py)
@@ -21,13 +21,8 @@ git ls-files '*.py' | xargs "$TOOLS_PY" -m py_compile && echo ok || fail=1
 step "shell syntax"
 for f in $(git ls-files '*.sh'); do bash -n "$f" || { echo "bad: $f"; fail=1; }; done; echo ok
 
-step "server self-tests"
-export RIGVIDEO_APP=$SRC/studio-app
-( cd server
-  for t in test_*.py; do printf '%s: ' "$t"; "$API_PY" "$t" 2>&1 | tail -1 | tee /tmp/rv-check-$$; grep -qE '\bok\b' /tmp/rv-check-$$ || fail=1; done
-  printf 'store selftest: '; "$API_PY" store.py 2>&1 | tail -1 | tee /tmp/rv-check-$$; grep -qE '\bok\b' /tmp/rv-check-$$ || fail=1
-  printf 'worker selftest: '; "$TOOLS_PY" worker.py selftest 2>&1 | tail -1 | tee /tmp/rv-check-$$; grep -qE '\bok\b' /tmp/rv-check-$$ || fail=1
-  rm -f /tmp/rv-check-$$; exit $fail ) || fail=1
+# The test suite (tests/) runs on GitHub's runners for every pull request (.github/workflows/tests.yml); release.yml
+# installs only a commit that passed it there. This script keeps the machine-side checks and builds the site.
 
 step "site type-check + build"
 ( cd web && export PATH=$NODE_BIN:$PATH && npm ci --no-audit --no-fund --loglevel=error && npm run build 2>&1 | tail -4 ) || fail=1

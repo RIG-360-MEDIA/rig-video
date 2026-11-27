@@ -1,0 +1,12 @@
+# Test-only dependencies (CI on GitHub's runners; the machines never install these).
+# The API's own packages are pinned to what trijya-7's API venv runs (checked 2026-11-27).
+fastapi==0.115.14
+starlette==0.46.2
+uvicorn==0.32.1
+pydantic==2.14.3
+python-multipart==0.0.33
+pypdf
+psycopg[binary]==3.3.6
+httpx
+pytest
+pytest-xdist

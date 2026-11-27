@@ -9,7 +9,7 @@ This chapter is the code-level reference for five files and the two helpers they
 | `server/app.py` | 1027 | FastAPI app: sign-in, every HTTP route, job spawning, the job loop (`monitor`), the daily run, auto-posting |
 | `server/store.py` | 308 | Project storage on disk, file locks, t3 GPU switch, render window, accounts and sessions |
 | `server/writer.py` | 439 | Script prompts, JSON schemas, code checks, and the one function that talks to the writer model |
-| `server/test_*.py` | 4 files | Self-tests run by CI |
+| `tests/` | the regression suite | Run by CI on every pull request; see `docs/TESTING.md` |
 | `studio-app/pipeline/orchestrator/llm.py` | 119 | The LLM provider pool (fallback path) |
 | `studio-app/pipeline/orchestrator/common.py` | 85 | Shared paths and `load_env()` |
 
@@ -718,27 +718,5 @@ already in the environment (for example from the systemd unit) wins. Nothing is 
 
 ## 6. Tests
 
-CI runs them in `deploy/check.sh` ("server self-tests"), from `server/`, with `RIGVIDEO_APP=<checkout>/studio-app`:
-every `test_*.py` and `store.py` with the API interpreter (`API_PY`, default `~/anchor-studio/rigvideo-api-venv/bin/python`),
-and `worker.py selftest` with `TOOLS_PY`. A test passes when the last line of its output contains the word `ok`.
-
-To run one by hand on t7:
-
-```bash
-cd ~/actions-runner/_work/rig-video/rig-video/server      # or any checkout
-export RIGVIDEO_APP=$PWD/../studio-app
-~/anchor-studio/rigvideo-api-venv/bin/python test_resume.py
-~/anchor-studio/rigvideo-api-venv/bin/python store.py      # store self-test
-~/.cache/anchor-tools/bin/python worker.py selftest
-python3 writer.py                                           # writer self-test (not in CI)
-```
-
-| Test | What it proves | How |
-|---|---|---|
-| `test_resume.py` | `app.resume()`: a vanished `check` job is restarted and its `resumes` becomes 1; at `resumes = 2` it gives up; `final` restarts with `again`; a `render` goes back to `queued` with `resumes 1` and its `_jobs` entry removed, and gives up at 2; a `post` is never restarted. | Temporary `STUDIO_DATA`; `app.spawn` replaced by a recorder |
-| `test_remake.py` | `app.remake()` sends a rendered story back to Review without its video and keeps an unlisted upload in `_oldPosts`; `now` puts it back in the queue keeping its outro choice; Remake and Discard (`archive`) are refused for a public video; a second Remake is refused. | Temporary `STUDIO_DATA`; `view` replaced by identity |
-| `test_upload.py` | `publish._send_chunks()` uploads in 4 MB chunks and resumes after a dropped chunk (asks YouTube how much arrived, then sends the rest). | A local fake resumable-upload server that drops the second chunk once |
-| `test_writer_busy.py` | `writer.ask()`: a fast stream returns the parsed JSON; a slow stream (under `MIN_TPS` after `CHECK_AFTER_S`, both shortened to 2 s / 6) raises `Busy` with "busy" in the message; a server that sends nothing within `FIRST_TOKEN_S` (set to 1 s) raises `Busy`. | A local `http.server` streaming SSE; `LLM_PROVIDERS` points at it |
-| `test_event_date.py` | `worker.event_query`, `worker.first_reported` and `worker.stated_date`: the first day an event was reported is found from matching titles (one matching report on a day is not enough, and a window that ends before the reports finds none); stated dates are parsed ("November 9", "9th of November", "on a Thursday"), never in the future, and "this week" gives none; a stated day is confirmed with `back=1`. | Fixed title lists; sets `RIGVIDEO_TEST=1` |
-| `test_search_pipelining.py` | `worker.step_search` (anchor formats) searches part 2 while part 1's clips are being cut, cuts one part at a time, and fails the job if a cut fails. | Store, footage backend and search functions replaced by local fakes |
-| `store.py` (no args) | Accounts: password check is case- and space-insensitive on email and rejects a wrong password; a session token round-trips and a tampered or junk token is refused. Projects: `create`, `update`, `job` merge and removal, `public()` hides `_jobs`. `in_render_window` at 00:30, 06:30 (in) and 07:30, 23:30 (out). `text_share` = `(0.25, ["b2"])` on a sample edit. `switched()` returns `write` (and sets `stage script`, `_autoApprove`) when the format has no script, else `approved`. | Temporary `DATA` under `$TMPDIR` |
+The tests moved to the regression suite in `tests/` (about 250 tests and about 10 browser journeys). CI runs it on
+every pull request on GitHub's runners. What each file covers, how to run it and how to add a test: **`docs/TESTING.md`**.
